@@ -27,6 +27,7 @@
     ;ship db 0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,0,0,0,0,0,0,0,0,0,1,1,0,1,1,0,1,1,0,0,0,0,0,0,1,1,0,1,1,1,1,0,1,1,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,1,1,0,1,1,0,0,0,0,0,0,0,0,0,1,1,0,0,0,1,1,0,0,0,0,0,0,0,1,1,0,0,0,0,0,1,1,0,0,0
     ship_height equ 9
     ship_width equ 15
+    ship_size_bytes equ 135
     teste db 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
 
     blue_ship db    1,1,1,1,1,1,1,1,1,1,1,1,0,0,0, \
@@ -67,16 +68,16 @@
 
 ;recebe tamanho em cx, coluna em di e linha em ax
 render_pixel_string proc
-    cld
     push cx
     push di
     push ax
     push bx
     
+    xor bx, bx
+    
     mov bx, 320        
     mul bx             
     add di, ax         
-    mov al, 12
     rep movsb
     
     pop bx
@@ -87,16 +88,16 @@ render_pixel_string proc
 endp
 ;PIXELS 
 
-;linha em ax, coluna em di, bl recebe a cor da nave
 render_ship proc
     push cx
     mov cx, ship_height
+  
   
     cmp bl, 1
     je blue
     cmp bl, 12
     je red
-    cmp bl, 0FH
+    cmp bl, 15
     je white
     
     blue: 
@@ -263,6 +264,13 @@ start:
     mov ax, 100
     xor di, di
     mov bl, 15
+    cld
+    call render_ship
+    
+    
+    mov ax, 100
+    mov di, 200
+    mov bl, 1
     call render_ship
     ;;;;;;;;;;;;;;;;
   
