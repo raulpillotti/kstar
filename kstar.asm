@@ -24,20 +24,100 @@
     btn_sair_l2 db 179,'  SAIR   ',179,0
     btn_sair_l3 db 192,196,196,196,196,196,196,196,196,196,217,0
     
+    ;ship db 0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,0,0,0,0,0,0,0,0,0,1,1,0,1,1,0,1,1,0,0,0,0,0,0,1,1,0,1,1,1,1,0,1,1,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,1,1,0,1,1,0,0,0,0,0,0,0,0,0,1,1,0,0,0,1,1,0,0,0,0,0,0,0,1,1,0,0,0,0,0,1,1,0,0,0
+    ship_height equ 9
+    ship_width equ 15
+    teste db 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
+
+    blue_ship db    1,1,1,1,1,1,1,1,1,1,1,1,0,0,0, \
+    0,0,1,1,0,0,0,0,0,0,0,0,0,0,0, \
+    0,0,1,1,0,0,0,0,0,0,0,0,0,0,0, \
+    0,0,1,1,1,1,1,0,0,0,0,0,0,0,0, \
+    0,0,1,1,1,1,1,1,1,1,1,1,1,1,1, \
+    0,0,1,1,1,1,1,0,0,0,0,0,0,0,0, \
+    0,0,1,1,0,0,0,0,0,0,0,0,0,0,0, \
+    0,0,1,1,0,0,0,0,0,0,0,0,0,0,0, \
+    1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,
+
+    white_ship db    15,15,15,15,15,15,15,15,15,15,15,15,0,0,0, \
+    0,0,15,15,0,0,0,0,0,0,0,0,0,0,0, \
+    0,0,15,15,0,0,0,0,0,0,0,0,0,0,0, \
+    0,0,15,15,15,15,15,0,0,0,0,0,0,0,0, \
+    0,0,15,15,15,15,15,15,15,15,15,15,15,15,15, \
+    0,0,15,15,15,15,15,0,0,0,0,0,0,0,0, \
+    0,0,15,15,0,0,0,0,0,0,0,0,0,0,0, \
+    0,0,15,15,0,0,0,0,0,0,0,0,0,0,0, \
+    15,15,15,15,15,15,15,15,15,15,15,15,0,0,0,
+
+    red_ship db    12,12,12,12,12,12,12,12,12,12,12,12,0,0,0, \
+    0,0,12,12,0,0,0,0,0,0,0,0,0,0,0, \
+    0,0,12,12,0,0,0,0,0,0,0,0,0,0,0, \
+    0,0,12,12,12,12,12,0,0,0,0,0,0,0,0, \
+    0,0,12,12,12,12,12,12,12,12,12,12,12,12,12, \
+    0,0,12,12,12,12,12,0,0,0,0,0,0,0,0, \
+    0,0,12,12,0,0,0,0,0,0,0,0,0,0,0, \
+    0,0,12,12,0,0,0,0,0,0,0,0,0,0,0, \
+    12,12,12,12,12,12,12,12,12,12,12,12,0,0,0,
+
     cr equ 13
     lf equ 10    
     
 
 .code
 
-
-;PIXELS 
-draw_pixel proc 
+;recebe tamanho em cx, coluna em di e linha em ax
+render_pixel_string proc
+    cld
+    push cx
+    push di
+    push ax
+    push bx
+    
     mov bx, 320        
     mul bx             
     add di, ax         
-    mov al, 12         
-    stosb
+    mov al, 12
+    rep movsb
+    
+    pop bx
+    pop ax
+    pop di
+    pop cx
+    ret
+endp
+;PIXELS 
+
+;linha em ax, coluna em di, bl recebe a cor da nave
+render_ship proc
+    push cx
+    mov cx, ship_height
+  
+    cmp bl, 1
+    je blue
+    cmp bl, 12
+    je red
+    cmp bl, 0FH
+    je white
+    
+    blue: 
+        mov si, offset blue_ship
+        jmp render_ship_line_loop
+    red: 
+        mov si, offset red_ship
+        jmp render_ship_line_loop
+    white: 
+        mov si, offset white_ship
+        jmp render_ship_line_loop
+
+    ;fazer isso ship_height vezes
+    render_ship_line_loop:
+        push cx
+        mov cx, ship_width
+        call render_pixel_string
+        inc ax
+        pop cx
+    loop render_ship_line_loop
+    pop cx
     ret
 endp
 
@@ -172,11 +252,19 @@ start:
     mov dx, 0A000H    
     mov es, dx
 
-    xor ax, ax       
+    xor ax, ax
+    xor di, di
     mov al, 13H       
     int 10H           
     
     call render_starting_screen
+    
+    ;;nave inicial
+    mov ax, 100
+    xor di, di
+    mov bl, 15
+    call render_ship
+    ;;;;;;;;;;;;;;;;
   
     game_loop:
     jmp game_loop
