@@ -29,6 +29,10 @@
     ;ship db 0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,0,0,0,0,0,0,0,0,0,1,1,0,1,1,0,1,1,0,0,0,0,0,0,1,1,0,1,1,1,1,0,1,1,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,1,1,0,1,1,0,0,0,0,0,0,0,0,0,1,1,0,0,0,1,1,0,0,0,0,0,0,0,1,1,0,0,0,0,0,1,1,0,0,0
     MODEL_HEIGHT equ 9
     MODEL_WIDTH equ 15
+    
+    SCREEN_WIDTH equ 320
+    SCREEN_HEIGHT equ 200
+    
     ship_size_bytes equ 135
     
     deleted_model db    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, \
@@ -41,25 +45,26 @@
                0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, \
                0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
     
-    blue_ship db 1,1,1,1,1,1,1,1,1,1,1,1,0,0,0, \
-    0,0,1,1,0,0,0,0,0,0,0,0,0,0,0, \
-    0,0,1,1,0,0,0,0,0,0,0,0,0,0,0, \
-    0,0,1,1,1,1,1,0,0,0,0,0,0,0,0, \
-    0,0,1,1,1,1,1,1,1,1,1,1,1,1,1, \
-    0,0,1,1,1,1,1,0,0,0,0,0,0,0,0, \
-    0,0,1,1,0,0,0,0,0,0,0,0,0,0,0, \
-    0,0,1,1,0,0,0,0,0,0,0,0,0,0,0, \
-    1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,
+    blue_ship db    09h,09h,09h,09h,09h,09h,09h,09h,09h,09h,09h,09h,0,0,0, \
+               0,0,09h,09h,0,0,0,0,0,0,0,0,0,0, \
+               0,0,09h,09h,0,0,0,0,0,0,0,0,0,0,0, \
+               0,0,09h,09h,09h,09h,09h,0,0,0,0,0,0,0, \
+               0,0,09h,09h,09h,09h,09h,09h,09h,09h,09h,09h,09h, \
+               0,0,09h,09h,09h,09h,09h,0,0,0,0,0,0,0, \
+               0,0,09h,09h,0,0,0,0,0,0,0,0,0,0,0, \
+               0,0,09h,09h,0,0,0,0,0,0,0,0,0,0,0, \
+               09h,09h,09h,09h,09h,09h,09h,09h,09h,09h,09h,09h,0,0,0,
     
-    blue_ship_inverted db 0,0,0,1,1,1,1,1,1,1,1,1,1,1,1, \
-    0,0,0,0,0,0,0,0,0,0,0,1,1,0,0, \
-    0,0,0,0,0,0,0,0,0,0,0,1,1,0,0, \
-    0,0,0,0,0,0,0,0,1,1,1,1,1,0,0, \
-    1,1,1,1,1,1,1,1,1,1,1,1,1,0,0, \
-    0,0,0,0,0,0,0,0,1,1,1,1,1,0,0, \
-    0,0,0,0,0,0,0,0,0,0,0,1,1,0,0, \
-    0,0,0,0,0,0,0,0,0,0,0,1,1,0,0, \
-    0,0,0,1,1,1,1,1,1,1,1,1,1,1,1, \
+blue_ship_inverted db 0,0,0,9,9,9,9,9,9,9,9,9,9,9,9, \
+                     0,0,0,0,0,0,0,0,0,0,0,9,9,0,0, \
+                     0,0,0,0,0,0,0,0,0,0,0,9,9,0,0, \
+                     0,0,0,0,0,0,0,0,9,9,9,9,9,0,0, \
+                     9,9,9,9,9,9,9,9,9,9,9,9,9,0,0, \
+                     0,0,0,0,0,0,0,0,9,9,9,9,9,0,0, \
+                     0,0,0,0,0,0,0,0,0,0,0,9,9,0,0, \
+                     0,0,0,0,0,0,0,0,0,0,0,9,9,0,0, \
+                     0,0,0,9,9,9,9,9,9,9,9,9,9,9,9,
+
 
     white_ship db    15,15,15,15,15,15,15,15,15,15,15,15,0,0,0, \
     0,0,15,15,0,0,0,0,0,0,0,0,0,0,0, \
@@ -114,22 +119,24 @@ endp
 ;bl = model, bh = inverter(1), ax = linha, di = coluna
 
 render_model_right proc
+        push ax
+        
         xor bl, bl
         call render_model
         
         inc di
-        mov bl, 15
+        mov bl, cl
         call render_model
+        pop ax
         ret
 endp
 
 render_model_left proc
-        mov di, 230
         xor bl, bl
         call render_model
         
         dec di
-        mov bl, 15
+        mov bl, cl
         call render_model
         ret
 endp
@@ -139,10 +146,10 @@ render_model proc
     push ax
     push di
     mov cx, MODEL_HEIGHT
-  
+ 
     cmp bl, 0
     je deleted
-    cmp bl, 1
+    cmp bl, 9
     je blue
     cmp bl, 12
     je red
@@ -298,6 +305,29 @@ render_starting_screen proc
     call render_title
     call render_button_jogar
     call render_button_sair
+    xor di, di
+    
+    ship_right_loop:
+        call set_execution_pace
+        cmp di, SCREEN_WIDTH - MODEL_WIDTH
+        je ship_left_loop
+        
+        mov cl, 15
+        xor bh, bh
+        mov ax, 100
+        call render_model_right
+        jmp ship_right_loop
+        
+      ship_left_loop:
+        call set_execution_pace
+        cmp di, 0
+        je ship_right_loop
+        mov cl, 9
+        mov bh, 1
+        mov ax, 100
+        call render_model_left
+        jmp ship_left_loop
+        
     ret
 endp
 
@@ -321,6 +351,14 @@ handle_input proc
 endp
 
 
+set_execution_pace:
+    xor ax, ax
+    mov ah, 86H
+    mov cx, 00       ; 16 bits mais significativos
+    mov dx, 6000H          ; 16 bits menos significativos
+    int 15h
+    ret
+endp
 
 start:
     mov ax, @data
@@ -335,41 +373,7 @@ start:
     mov al, 13H       
     int 10H           
     
-    ;; Inicialize o registrador al com 1 (JOGAR selecionado)
     mov al, 1
     call render_starting_screen
-    
-   
-    ;;nave inicial
-    mov ax, 100
-    xor di, di
-    mov bl, 15
-    cld
-    ;call render_model
-    
-    
-    ;mov ax, 140
-    ;mov di, 300
-    ;mov bl, 1
-    ;mov bh, 1
-    ;call render_model
-
-    ;;;;;;;;;;;;;;;;
-    mov bl, 15
-    xor di, di
-    
-    game_loop:
-        push ax
-        xor ax, ax
-        mov ah, 86H
-        mov cx, 00       ; 16 bits mais significativos
-        mov dx, 8480H          ; 16 bits menos significativos
-        int 15h              ; Chama a interrup??o para suspender a execu??o
-        
-        pop ax
-        call render_model_right
-        ;call render_model_left
-        
-        jmp game_loop
- 
+            
 end start
