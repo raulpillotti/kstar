@@ -24,12 +24,13 @@
     btn_sair_l2 db 179,'  SAIR   ',179,0
     btn_sair_l3 db 192,196,196,196,196,196,196,196,196,196,217,0
     
+    teste db 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
+    
     ;ship db 0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,0,0,0,0,0,0,0,0,0,1,1,0,1,1,0,1,1,0,0,0,0,0,0,1,1,0,1,1,1,1,0,1,1,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,1,1,0,1,1,0,0,0,0,0,0,0,0,0,1,1,0,0,0,1,1,0,0,0,0,0,0,0,1,1,0,0,0,0,0,1,1,0,0,0
     ship_height equ 9
     ship_width equ 15
     ship_size_bytes equ 135
-    teste db 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
-
+    
     blue_ship db    1,1,1,1,1,1,1,1,1,1,1,1,0,0,0, \
     0,0,1,1,0,0,0,0,0,0,0,0,0,0,0, \
     0,0,1,1,0,0,0,0,0,0,0,0,0,0,0, \
@@ -59,7 +60,7 @@
     0,0,12,12,0,0,0,0,0,0,0,0,0,0,0, \
     0,0,12,12,0,0,0,0,0,0,0,0,0,0,0, \
     12,12,12,12,12,12,12,12,12,12,12,12,0,0,0,
-
+    
     cr equ 13
     lf equ 10    
     
@@ -86,12 +87,12 @@ render_pixel_string proc
     pop cx
     ret
 endp
+
 ;PIXELS 
 
 render_ship proc
     push cx
     mov cx, ship_height
-  
   
     cmp bl, 1
     je blue
@@ -109,7 +110,7 @@ render_ship proc
     white: 
         mov si, offset white_ship
         jmp render_ship_line_loop
-
+        
     ;fazer isso ship_height vezes
     render_ship_line_loop:
         push cx
@@ -118,7 +119,9 @@ render_ship proc
         inc ax
         pop cx
     loop render_ship_line_loop
+    
     pop cx
+    
     ret
 endp
 
@@ -194,27 +197,53 @@ render_title proc
     ret
 endp  
 
-; Subprograma para desenhar a caixa do bot?o
+; Subprograma para desenhar a caixa do bot?o com cor diferente dependendo da sele??o
 render_button_jogar proc
+    
     mov cx, button_line_size
-    mov si, offset btn_jogar_l1   
-    call render_string
-    mov si, offset btn_jogar_l2   
-    call render_string
-    mov si, offset btn_jogar_l3   
-    call render_string
+    
+    cmp al, 1
+    je jogar_selected
+    
+    mov bl, 0Fh
+    jmp render_jogar_normal
+    
+    jogar_selected:
+        mov bl, 0Ch  ; Cor vermelho claro (selecionado)
+    
+    render_jogar_normal:
+        mov si, offset btn_jogar_l1
+        call render_string
+        mov si, offset btn_jogar_l2
+        call render_string
+        mov si, offset btn_jogar_l3
+        call render_string
+    
+        ;push ax
     ret
 endp
 
-; Subprograma para desenhar a caixa do bot?o
 render_button_sair proc
+    
     mov cx, button_line_size
-    mov si, offset btn_sair_l1   
-    call render_string
-    mov si, offset btn_sair_l2   
-    call render_string
-    mov si, offset btn_sair_l3   
-    call render_string
+    cmp al, 2
+    je sair_selected
+
+    mov bl, 0Fh
+    jmp render_sair_normal
+    
+    sair_selected:
+        mov bl, 0Ch
+    
+    render_sair_normal:
+        mov si, offset btn_sair_l1
+        call render_string
+        mov si, offset btn_sair_l2
+        call render_string
+        mov si, offset btn_sair_l3
+        call render_string
+      
+        ;push ax
     ret
 endp
 
@@ -231,19 +260,26 @@ draw_empty_lines proc
 endp
 
 ; Tela inicial
-
 render_starting_screen proc
+
     call render_title
     mov cx, 10 ; N?mero de linhas em branco que deseja desenhar
     call draw_empty_lines
     
-    ;; depois tem que trocar as cores se clicar nas flechas pra trocar de bot?o, agora come?a com o jogar como vermelho
-    mov bl, 12
     call render_button_jogar
-    mov bl, 0fh
     call render_button_sair
+
     ret
 endp
+
+handle_input proc
+    mov ah, 00h
+    int 16h ; Espera por uma tecla pressionada, retorna o c?digo em AL
+    
+      ret
+endp
+
+
 
 start:
     mov ax, @data
@@ -258,6 +294,8 @@ start:
     mov al, 13H       
     int 10H           
     
+    ;; Inicialize o registrador al com 1 (JOGAR selecionado)
+    mov al, 1
     call render_starting_screen
     
     ;;nave inicial
@@ -269,12 +307,13 @@ start:
     
     
     mov ax, 100
-    mov di, 200
+    mov di, 300
     mov bl, 1
     call render_ship
     ;;;;;;;;;;;;;;;;
   
     game_loop:
-    jmp game_loop
+      call handle_input
+      jmp game_loop
  
 end start
