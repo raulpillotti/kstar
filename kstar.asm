@@ -85,10 +85,29 @@ blue_ship_inverted db 0,0,0,9,9,9,9,9,9,9,9,9,9,9,9, \
     0,0,12,12,0,0,0,0,0,0,0,0,0,0,0, \
     0,0,12,12,0,0,0,0,0,0,0,0,0,0,0, \
     12,12,12,12,12,12,12,12,12,12,12,12,0,0,0,
+
+    setor1 db '   _____      __                ___ ', \
+              '  / ___/___  / /_____  _____   <  / ', \
+              '  \__ \/ _ \/ __/ __ \/ ___/   / /  ', \
+              ' ___/ /  __/ /_/ /_/ / /      / /   ', \
+              '/____/\___/\__/\____/_/      /_/    ', 0
     
+    setor2 db '   _____      __                ___  ', \
+              '  / ___/___  / /_____  _____   |__ \ ', \
+              '  \__ \/ _ \/ __/ __ \/ ___/   __/ / ', \
+              ' ___/ /  __/ /_/ /_/ / /      / __/  ', \
+              '/____/\___/\__/\____/_/      /____/  ', 0
+                                        
+    setor3 db '   _____      __                _____ ', \
+              '  / ___/___  / /_____  _____   |__  / ', \
+              '  \__ \/ _ \/ __/ __ \/ ___/    /_ <  ', \
+              ' ___/ /  __/ /_/ /_/ / /      ___/ /  ', \
+              '/____/\___/\__/\____/_/      /____/   ', 0
+
+    selected_option dw 0
+
     cr equ 13
     lf equ 10    
-    
 
 .code
 
@@ -331,24 +350,44 @@ render_starting_screen proc
     ret
 endp
 
+; Captura a entrada e move a seleção ou confirma
 handle_input proc
-    push ax
-    xor ax, ax
-    int 16h ; Espera por uma tecla pressionada, retorna o c?digo em AL
-    cmp al, 1
-    je button_jogar
-    cmp al, 0
-    je button_sair
-    button_jogar: 
-        call render_button_jogar
-        jmp end_handle_input
-    button_sair: 
-        call render_button_sair
-        jmp end_handle_input
-    end_handle_input:
-        pop ax
-        ret
-endp
+  mov ah, 00h
+  int 16h ; Espera uma tecla
+
+  cmp al, 72h ; Seta para cima
+  je move_up
+  cmp al, 80h ; Seta para baixo
+  je move_down
+  cmp al, 0Dh ; Enter
+  je execute_option
+
+  jmp handle_input
+
+  move_up:
+    dec selected_option
+    jmp render_menu
+
+  move_down:
+    inc selected_option
+    jmp render_menu
+
+  execute_option:
+    cmp selected_option, 0
+    je start_game
+    cmp selected_option, 1
+    je exit_program
+    ret
+
+  start_game:
+    call render_setor_1
+    ret
+
+  exit_program:
+    mov ax, 4c00h
+    int 21h
+    ret
+handle_input endp
 
 
 set_execution_pace:
@@ -358,6 +397,13 @@ set_execution_pace:
     mov dx, 6000H          ; 16 bits menos significativos
     int 15h
     ret
+endp
+
+render_setor_1 proc
+
+
+
+  ret
 endp
 
 start:
