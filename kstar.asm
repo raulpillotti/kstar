@@ -55,15 +55,25 @@
                0,0,09h,09h,0,0,0,0,0,0,0,0,0,0,0, \
                09h,09h,09h,09h,09h,09h,09h,09h,09h,09h,09h,09h,0,0,0,
     
-blue_ship_inverted db 0,0,0,9,9,9,9,9,9,9,9,9,9,9,9, \
-                     0,0,0,0,0,0,0,0,0,0,0,9,9,0,0, \
-                     0,0,0,0,0,0,0,0,0,0,0,9,9,0,0, \
-                     0,0,0,0,0,0,0,0,9,9,9,9,9,0,0, \
-                     9,9,9,9,9,9,9,9,9,9,9,9,9,0,0, \
-                     0,0,0,0,0,0,0,0,9,9,9,9,9,0,0, \
-                     0,0,0,0,0,0,0,0,0,0,0,9,9,0,0, \
-                     0,0,0,0,0,0,0,0,0,0,0,9,9,0,0, \
-                     0,0,0,9,9,9,9,9,9,9,9,9,9,9,9,
+    blue_ship_inverted db 0,0,0,9,9,9,9,9,9,9,9,9,9,9,9, \
+                         0,0,0,0,0,0,0,0,0,0,0,9,9,0,0, \
+                         0,0,0,0,0,0,0,0,0,0,0,9,9,0,0, \
+                         0,0,0,0,0,0,0,0,9,9,9,9,9,0,0, \
+                         9,9,9,9,9,9,9,9,9,9,9,9,9,0,0, \
+                         0,0,0,0,0,0,0,0,9,9,9,9,9,0,0, \
+                         0,0,0,0,0,0,0,0,0,0,0,9,9,0,0, \
+                         0,0,0,0,0,0,0,0,0,0,0,9,9,0,0, \
+                         0,0,0,9,9,9,9,9,9,9,9,9,9,9,9,
+                         
+    bullet db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, \
+        0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, \
+        0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, \
+        0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, \
+        0,15,0,15,0,15,0,15,0,15,0,15,0,15,0, \
+        0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, \
+        0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, \
+        0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, \
+        0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 
 
     white_ship db    15,15,15,15,15,15,15,15,15,15,15,15,0,0,0, \
@@ -105,6 +115,7 @@ render_pixel_string proc
     mul bx             
     add di, ax         
     rep movsb
+    inc ax
     
     pop bx
     pop ax
@@ -120,9 +131,7 @@ endp
 
 render_model_right proc
         push ax
-        
-        xor bl, bl
-        call render_model
+        call delete_model
         
         inc di
         mov bl, cl
@@ -132,18 +141,21 @@ render_model_right proc
 endp
 
 render_model_left proc
-        xor bl, bl
-        call render_model
+        push ax
+        call delete_model
+        pop ax
         
+        push ax
         dec di
         mov bl, cl
         call render_model
+        pop ax
         ret
 endp
 
 render_model proc
-    push cx
     push ax
+    push cx
     push di
     mov cx, MODEL_HEIGHT
  
@@ -183,11 +195,9 @@ render_model proc
         pop cx
         loop render_model_line_loop
     
-    int 10h
-    
     pop di
-    pop ax
     pop cx
+    pop ax
     
     ret
 endp
@@ -300,6 +310,35 @@ render_button_sair proc
     ret
 endp
 
+delete_model proc
+    xor bl, bl
+    call render_model
+    ret
+endp
+
+;linha inicial em ax
+render_enemy_ship proc
+    mov di, SCREEN_WIDTH - MODEL_WIDTH
+    push ax
+    call delete_model
+    
+    move_left_loop:
+        cmp di, 0
+        je end_render_enemy_ship
+        push ax
+        call set_execution_pace
+        mov cl, 9
+        mov bh, 1
+        pop ax
+        call render_model_left
+        jmp move_left_loop  
+    
+    end_render_enemy_ship: 
+        call delete_model
+        pop ax
+        ret
+endp
+
 ; Tela inicial
 render_starting_screen proc
     call render_title
@@ -331,6 +370,48 @@ render_starting_screen proc
     ret
 endp
 
+render_game_screen proc
+    push ax
+    xor di, di
+   
+    mov bl, 15
+    mov ax, 20
+    call render_model
+    
+    mov bl, 15
+    mov ax, 40
+    call render_model
+    
+    mov bl, 15
+    mov ax, 60
+    call render_model
+    
+    mov bl, 15
+    mov ax, 80
+    call render_model
+    
+    mov bl, 15
+    mov ax, 100
+    call render_model
+    
+    mov bl, 15
+    mov ax, 120
+    call render_model
+    
+    mov bl, 15
+    mov ax, 140
+    call render_model
+    
+    mov bl, 15
+    mov ax, 160
+    call render_model
+    
+    mov ax, 80
+    call render_enemy_ship
+    pop ax
+    ret
+endp
+
 handle_input proc
     push ax
     xor ax, ax
@@ -352,11 +433,13 @@ endp
 
 
 set_execution_pace:
+    push ax
     xor ax, ax
     mov ah, 86H
     mov cx, 00       ; 16 bits mais significativos
-    mov dx, 6000H          ; 16 bits menos significativos
+    mov dx, 600H          ; 16 bits menos significativos
     int 15h
+    pop ax
     ret
 endp
 
@@ -373,7 +456,10 @@ start:
     mov al, 13H       
     int 10H           
     
-    mov al, 1
-    call render_starting_screen
-            
+    ;mov al, 1
+    ;call render_starting_screen
+    call render_game_screen
+        
+    ;game_loop:
+        ;jmp game_loop
 end start
