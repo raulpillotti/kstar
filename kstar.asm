@@ -15,7 +15,7 @@
     title_l8 db '|_|  <___| |_| |_|  \___/|_|', 0
     title_line_size equ 30
     
-    button_line_size equ 10
+    button_line_size equ 11
     btn_jogar_l1 db 218,196,196,196,196,196,196,196,196,196,191,0
     btn_jogar_l2 db 179,'  JOGAR  ',179,0
     btn_jogar_l3 db 192,196,196,196,196,196,196,196,196,196,217,0
@@ -24,11 +24,11 @@
     btn_sair_l2 db 179,'  SAIR   ',179,0
     btn_sair_l3 db 192,196,196,196,196,196,196,196,196,196,217,0
     
-    teste db 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
+    teste db 'raul'
     
     ;ship db 0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,0,0,0,0,0,0,0,0,0,1,1,0,1,1,0,1,1,0,0,0,0,0,0,1,1,0,1,1,1,1,0,1,1,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,1,1,0,1,1,0,0,0,0,0,0,0,0,0,1,1,0,0,0,1,1,0,0,0,0,0,0,0,1,1,0,0,0,0,0,1,1,0,0,0
-    ship_height equ 9
-    ship_width equ 15
+    MODEL_HEIGHT equ 9
+    MODEL_WIDTH equ 15
     ship_size_bytes equ 135
     
     blue_ship db    1,1,1,1,1,1,1,1,1,1,1,1,0,0,0, \
@@ -90,9 +90,9 @@ endp
 
 ;PIXELS 
 
-render_ship proc
+render_model proc
     push cx
-    mov cx, ship_height
+    mov cx, MODEL_HEIGHT
   
     cmp bl, 1
     je blue
@@ -103,23 +103,23 @@ render_ship proc
     
     blue: 
         mov si, offset blue_ship
-        jmp render_ship_line_loop
+        jmp render_model_line_loop
     red: 
         mov si, offset red_ship
-        jmp render_ship_line_loop
+        jmp render_model_line_loop
     white: 
         mov si, offset white_ship
-        jmp render_ship_line_loop
+        jmp render_model_line_loop
         
     ;fazer isso ship_height vezes
-    render_ship_line_loop:
+    render_model_line_loop:
         push cx
-        mov cx, ship_width
+        mov cx, MODEL_WIDTH
         call render_pixel_string
         inc ax
         pop cx
-    loop render_ship_line_loop
-    
+        loop render_model_line_loop
+    int 10h
     pop cx
     
     ret
@@ -128,70 +128,51 @@ endp
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;STRINGS
-
-; passa tamanho da string em cx pra centralizar na tela
-center_string proc
-    push cx
-    push bx
-    
-    cmp cx, 0
-    jz end_center_string
-    
-    mov bx, max_line_size
-    sub bx, cx            
-    shr bx, 1
-    mov cx, bx
-    
-    render_spaces:
-        mov al, ' '
-        int 10h
-        loop render_spaces
-    
-    end_center_string:
-        pop bx
-        pop cx
-        ret
-endp
-
-
-render_string proc
-    mov ah, 0eh         
-    xor bh, bh
-    cld                 
-    
-    call center_string
-    write_char_loop:
-        lodsb               ; Carregar pr?ximo byte da string em AL
-        cmp al, 0           ; Verificar se o caractere ? nulo (fim da string)
-        je end_render_string
-        int 10h            ; Chamar a interrup??o de v?deo para escrever o caractere
-        jmp write_char_loop      
-        
-    end_render_string:
-        mov al, cr
-        int 10h
-        mov al, lf
-        int 10h
-        ret                  
+render_string proc  
+    ; Par?metros:
+    ; DS:SI - endere?o da string (offset)
+    ; CX - tamanho da string (n?mero de caracteres)
+    ; DH, DL - posi??o de in?cio (linha e coluna)
+    ; BL - cor
+    push es
+    mov ah, 13h            
+    mov al, 1              
+    xor bh, bh             
+    push ds
+    pop es                 
+    mov bp, si             
+    int 10h                
+    pop es
+    ret                   
 render_string endp
 
 render_title proc
     mov bl, 0ah
+    xor dx, dx
     mov cx, title_line_size
-    mov si, offset title_l1   
+    mov dl, 5
+    
+    mov si, offset title_l1
     call render_string
+    inc dh
     mov si, offset title_l2   
     call render_string
-    mov si, offset title_l3   
+    inc dh
+    mov si, offset title_l3
     call render_string
+    inc dh
     mov si, offset title_l4   
     call render_string
+    inc dh
     mov si, offset title_l5   
-    call render_string    
+    call render_string
+    inc dh    
     mov si, offset title_l6   
     call render_string
+    inc dh
     mov si, offset title_l7   
     call render_string
+    inc dh
     mov si, offset title_l8   
     call render_string
     ret
@@ -199,9 +180,10 @@ endp
 
 ; Subprograma para desenhar a caixa do bot?o com cor diferente dependendo da sele??o
 render_button_jogar proc
-    
     mov cx, button_line_size
-    
+    xor dx, dx
+    mov dh, 42
+    mov dl, 7
     cmp al, 1
     je jogar_selected
     
@@ -214,17 +196,18 @@ render_button_jogar proc
     render_jogar_normal:
         mov si, offset btn_jogar_l1
         call render_string
+        inc dh
         mov si, offset btn_jogar_l2
         call render_string
+        inc dh
         mov si, offset btn_jogar_l3
         call render_string
-    
+        add dh, 2
         ;push ax
     ret
 endp
 
 render_button_sair proc
-    
     mov cx, button_line_size
     cmp al, 2
     je sair_selected
@@ -238,45 +221,42 @@ render_button_sair proc
     render_sair_normal:
         mov si, offset btn_sair_l1
         call render_string
+        inc dh
         mov si, offset btn_sair_l2
         call render_string
+        inc dh
         mov si, offset btn_sair_l3
         call render_string
-      
+        inc dh
         ;push ax
-    ret
-endp
-
-; Desenhar linhas em branco
-draw_empty_lines proc
-    empty_line_loop:
-        mov ah, 0eh
-        mov al, 0Dh
-        int 10h
-        mov al, 0Ah
-        int 10h
-        loop empty_line_loop
     ret
 endp
 
 ; Tela inicial
 render_starting_screen proc
-
     call render_title
-    mov cx, 10 ; N?mero de linhas em branco que deseja desenhar
-    call draw_empty_lines
-    
     call render_button_jogar
     call render_button_sair
-
     ret
 endp
 
 handle_input proc
-    mov ah, 00h
+    push ax
+    xor ax, ax
     int 16h ; Espera por uma tecla pressionada, retorna o c?digo em AL
-    
-      ret
+    cmp al, 1
+    je button_jogar
+    cmp al, 0
+    je button_sair
+    button_jogar: 
+        call render_button_jogar
+        jmp end_handle_input
+    button_sair: 
+        call render_button_sair
+        jmp end_handle_input
+    end_handle_input:
+        pop ax
+        ret
 endp
 
 
@@ -298,22 +278,24 @@ start:
     mov al, 1
     call render_starting_screen
     
+   
     ;;nave inicial
-    mov ax, 100
+    mov ax, 140
     xor di, di
     mov bl, 15
     cld
-    call render_ship
+    call render_model
     
     
-    mov ax, 100
+    mov ax, 140
     mov di, 300
     mov bl, 1
-    call render_ship
+    call render_model
+
     ;;;;;;;;;;;;;;;;
   
     game_loop:
-      call handle_input
+    ;call handle_input
       jmp game_loop
  
 end start
