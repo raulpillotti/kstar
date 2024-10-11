@@ -31,7 +31,17 @@
     MODEL_WIDTH equ 15
     ship_size_bytes equ 135
     
-    blue_ship db    1,1,1,1,1,1,1,1,1,1,1,1,0,0,0, \
+    deleted_model db    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, \
+               0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, \
+               0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, \
+               0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, \
+               0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, \
+               0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, \
+               0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, \
+               0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, \
+               0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+    
+    blue_ship db 1,1,1,1,1,1,1,1,1,1,1,1,0,0,0, \
     0,0,1,1,0,0,0,0,0,0,0,0,0,0,0, \
     0,0,1,1,0,0,0,0,0,0,0,0,0,0,0, \
     0,0,1,1,1,1,1,0,0,0,0,0,0,0,0, \
@@ -40,6 +50,16 @@
     0,0,1,1,0,0,0,0,0,0,0,0,0,0,0, \
     0,0,1,1,0,0,0,0,0,0,0,0,0,0,0, \
     1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,
+    
+    blue_ship_inverted db 0,0,0,1,1,1,1,1,1,1,1,1,1,1,1, \
+    0,0,0,0,0,0,0,0,0,0,0,1,1,0,0, \
+    0,0,0,0,0,0,0,0,0,0,0,1,1,0,0, \
+    0,0,0,0,0,0,0,0,1,1,1,1,1,0,0, \
+    1,1,1,1,1,1,1,1,1,1,1,1,1,0,0, \
+    0,0,0,0,0,0,0,0,1,1,1,1,1,0,0, \
+    0,0,0,0,0,0,0,0,0,0,0,1,1,0,0, \
+    0,0,0,0,0,0,0,0,0,0,0,1,1,0,0, \
+    0,0,0,1,1,1,1,1,1,1,1,1,1,1,1, \
 
     white_ship db    15,15,15,15,15,15,15,15,15,15,15,15,0,0,0, \
     0,0,15,15,0,0,0,0,0,0,0,0,0,0,0, \
@@ -88,12 +108,40 @@ render_pixel_string proc
     ret
 endp
 
+
 ;PIXELS 
+
+;bl = model, bh = inverter(1), ax = linha, di = coluna
+
+render_model_right proc
+        xor bl, bl
+        call render_model
+        
+        inc di
+        mov bl, 15
+        call render_model
+        ret
+endp
+
+render_model_left proc
+        mov di, 230
+        xor bl, bl
+        call render_model
+        
+        dec di
+        mov bl, 15
+        call render_model
+        ret
+endp
 
 render_model proc
     push cx
+    push ax
+    push di
     mov cx, MODEL_HEIGHT
   
+    cmp bl, 0
+    je deleted
     cmp bl, 1
     je blue
     cmp bl, 12
@@ -101,9 +149,17 @@ render_model proc
     cmp bl, 15
     je white
     
-    blue: 
+    deleted:
+        mov si, offset deleted_model
+        jmp render_model_line_loop
+    blue:
+        cmp bh, 1
+        je render_blue_ship_inverted
         mov si, offset blue_ship
         jmp render_model_line_loop
+        render_blue_ship_inverted:
+            mov si, offset blue_ship_inverted
+            jmp render_model_line_loop
     red: 
         mov si, offset red_ship
         jmp render_model_line_loop
@@ -119,11 +175,16 @@ render_model proc
         inc ax
         pop cx
         loop render_model_line_loop
+    
     int 10h
+    
+    pop di
+    pop ax
     pop cx
     
     ret
 endp
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -280,22 +341,35 @@ start:
     
    
     ;;nave inicial
-    mov ax, 140
+    mov ax, 100
     xor di, di
     mov bl, 15
     cld
-    call render_model
+    ;call render_model
     
     
-    mov ax, 140
-    mov di, 300
-    mov bl, 1
-    call render_model
+    ;mov ax, 140
+    ;mov di, 300
+    ;mov bl, 1
+    ;mov bh, 1
+    ;call render_model
 
     ;;;;;;;;;;;;;;;;
-  
+    mov bl, 15
+    xor di, di
+    
     game_loop:
-    ;call handle_input
-      jmp game_loop
+        push ax
+        xor ax, ax
+        mov ah, 86H
+        mov cx, 00       ; 16 bits mais significativos
+        mov dx, 8480H          ; 16 bits menos significativos
+        int 15h              ; Chama a interrup??o para suspender a execu??o
+        
+        pop ax
+        call render_model_right
+        ;call render_model_left
+        
+        jmp game_loop
  
 end start
