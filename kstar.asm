@@ -321,10 +321,30 @@ render_enemy_ship proc
     mov di, SCREEN_WIDTH - MODEL_WIDTH
     push ax
     call delete_model
-    
+
+
     move_left_loop:
         cmp di, 0
         je end_render_enemy_ship
+        
+        ;;;;;;;;;;;;;;; Verifica??o de colis?o;;;;;;;
+        push di
+        push ax
+        push bx
+
+        xor bx, bx
+        mov bx, 320           
+        mul bx               
+        add di, ax
+        
+        ;se encontra pixel branco deveria apagar a nave
+        cmp byte ptr [es: di], 15
+        je end_render_enemy_ship
+        pop bx
+        pop ax
+        pop di
+        ;;;;;;;;;;;;;;;;;;;;;;;
+
         push ax
         call set_execution_pace
         mov cl, 9
@@ -406,6 +426,13 @@ render_game_screen proc
     mov ax, 160
     call render_model
     
+    mov di, 32
+    mov bl, 15
+    mov ax, 100
+    call render_model
+    
+    mov ax, 100
+    call render_enemy_ship
     mov ax, 80
     call render_enemy_ship
     pop ax
