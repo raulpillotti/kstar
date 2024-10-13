@@ -118,9 +118,6 @@
     setor3_l5 db '/____/\___/\__/\____/_/      /____/   ', 0
     LENGTH_SETOR3 equ 39               
     
-    ; 4 segundos = 4 * (18.2 ticks por segundo) ? 73 ticks
-    DEPLAY_TICKETS equ 73  ; Adiciona 73 ticks ao valor inicial
-    
     cr equ 13
     lf equ 10    
     
@@ -587,20 +584,15 @@ render_setor_3 proc
 endp
 
 delay_4_seconds proc
-    ; Obt?m o valor atual do contador de ticks
-    mov ah, 00h
-    int 1Ah               ; Interrup??o BIOS - L? o timer
-    mov bx, dx            ; Salva o valor inicial de ticks em BX
+    
+    ; 4.000.000 decimal ? 3D0900 hexadecimal
 
-    add bx, DEPLAY_TICKETS
+    mov cx, 003Dh      ; Parte alta do valor em microssegundos
+    mov dx, 0900h      ; Parte baixa do valor em microssegundos
 
-    wait_loop:
-        ; Verifica o valor atual do contador de ticks
-        mov ah, 00h
-        int 1Ah
-        cmp dx, bx            ; Verifica se o tempo desejado passou
-        jb wait_loop          ; Se ainda n?o passou, continua esperando
-
+    mov ah, 86h        ; Fun??o de atraso da interrup??o 15h
+    int 15h
+    
     ret
 endp
 
