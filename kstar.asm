@@ -118,7 +118,8 @@
     setor3_l5 db '/____/\___/\__/\____/_/      /____/   ', 0
     LENGTH_SETOR3 equ 39               
     
-    DEPLAY_TICKETS equ 73
+    ; 4 segundos = 4 * (18.2 ticks por segundo) ? 73 ticks
+    DEPLAY_TICKETS equ 73  ; Adiciona 73 ticks ao valor inicial
     
     cr equ 13
     lf equ 10    
@@ -525,26 +526,6 @@ render_setor_1 proc
     ret
 endp
 
-delay_4_seconds proc
-    ; Obt?m o valor atual do contador de ticks
-    mov ah, 00h
-    int 1Ah               ; Interrup??o BIOS - L? o timer
-    mov bx, dx            ; Salva o valor inicial de ticks em BX
-
-    ; Calcula o n?mero de ticks necess?rios para 4 segundos
-    ; 4 segundos = 4 * (18.2 ticks por segundo) ? 73 ticks
-    add bx, DEPLAY_TICKETS ; Adiciona 73 ticks ao valor inicial
-
-    wait_loop:
-        ; Verifica o valor atual do contador de ticks
-        mov ah, 00h
-        int 1Ah
-        cmp dx, bx            ; Verifica se o tempo desejado passou
-        jb wait_loop          ; Se ainda n?o passou, continua esperando
-
-    ret
-endp
-
 render_setor_2 proc
     mov bl, 04h  ; Cor vermhlo para o texto
     xor dx, dx
@@ -569,6 +550,9 @@ render_setor_2 proc
     mov si, offset setor2_l5
     call render_string
 
+    call delay_4_seconds
+    call clear_screen
+    
     ret
 endp
 
@@ -595,6 +579,27 @@ render_setor_3 proc
     inc dh
     mov si, offset setor3_l5
     call render_string
+    
+    call delay_4_seconds
+    call clear_screen
+
+    ret
+endp
+
+delay_4_seconds proc
+    ; Obt?m o valor atual do contador de ticks
+    mov ah, 00h
+    int 1Ah               ; Interrup??o BIOS - L? o timer
+    mov bx, dx            ; Salva o valor inicial de ticks em BX
+
+    add bx, DEPLAY_TICKETS
+
+    wait_loop:
+        ; Verifica o valor atual do contador de ticks
+        mov ah, 00h
+        int 1Ah
+        cmp dx, bx            ; Verifica se o tempo desejado passou
+        jb wait_loop          ; Se ainda n?o passou, continua esperando
 
     ret
 endp
