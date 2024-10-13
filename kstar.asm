@@ -96,6 +96,30 @@
     0,0,12,12,0,0,0,0,0,0,0,0,0,0,0, \
     12,12,12,12,12,12,12,12,12,12,12,12,0,0,0,
     
+    ; Definir o texto em ASCII para o setor 1
+    setor1_l1 db '   _____      __                ___ ', 0
+    setor1_l2 db '  / ___/___  / /_____  _____   <  / ', 0
+    setor1_l3 db '  \__ \/ _ \/ __/ __ \/ ___/   / /  ', 0
+    setor1_l4 db ' ___/ /  __/ /_/ /_/ / /      / /   ', 0
+    setor1_l5 db '/____/\___/\__/\____/_/      /_/    ', 0
+    LENGTH_SETOR1 equ 37
+
+    setor2_l1 db '   _____      __                ___  ', 0
+    setor2_l2 db '  / ___/___  / /_____  _____   |__ \ ', 0
+    setor2_l3 db '  \__ \/ _ \/ __/ __ \/ ___/   __/ / ', 0
+    setor2_l4 db ' ___/ /  __/ /_/ /_/ / /      / __/  ', 0
+    setor2_l5 db '/____/\___/\__/\____/_/      /____/  ', 0
+    LENGTH_SETOR2 equ 38
+    
+    setor3_l1 db '   _____      __                _____ ', 0
+    setor3_l2 db '  / ___/___  / /_____  _____   |__  / ', 0
+    setor3_l3 db '  \__ \/ _ \/ __/ __ \/ ___/    /_ <  ', 0
+    setor3_l4 db ' ___/ /  __/ /_/ /_/ / /      ___/ /  ', 0
+    setor3_l5 db '/____/\___/\__/\____/_/      /____/   ', 0
+    LENGTH_SETOR3 equ 39               
+    
+    DEPLAY_TICKETS equ 73
+    
     cr equ 13
     lf equ 10    
     
@@ -470,6 +494,128 @@ set_execution_pace:
     ret
 endp
 
+render_setor_1 proc
+    mov bl, 05h  ; Cor magenta para o texto
+    xor dx, dx
+    mov cx, LENGTH_SETOR1
+    
+    ; Define a posi??o inicial para renderizar cada linha (coluna = 10, linha = 2)
+    mov dh, 10
+    mov dl, 2
+
+    mov si, offset setor1_l1
+    call render_string
+    inc dh
+    mov si, offset setor1_l2
+    call render_string
+    inc dh 
+    mov si, offset setor1_l3
+    call render_string
+    inc dh
+    mov si, offset setor1_l4
+    call render_string
+    inc dh
+    mov si, offset setor1_l5
+    call render_string
+
+    call delay_4_seconds
+    call clear_screen
+    call render_game_screen
+    
+    ret
+endp
+
+delay_4_seconds proc
+    ; Obt?m o valor atual do contador de ticks
+    mov ah, 00h
+    int 1Ah               ; Interrup??o BIOS - L? o timer
+    mov bx, dx            ; Salva o valor inicial de ticks em BX
+
+    ; Calcula o n?mero de ticks necess?rios para 4 segundos
+    ; 4 segundos = 4 * (18.2 ticks por segundo) ? 73 ticks
+    add bx, DEPLAY_TICKETS ; Adiciona 73 ticks ao valor inicial
+
+    wait_loop:
+        ; Verifica o valor atual do contador de ticks
+        mov ah, 00h
+        int 1Ah
+        cmp dx, bx            ; Verifica se o tempo desejado passou
+        jb wait_loop          ; Se ainda n?o passou, continua esperando
+
+    ret
+endp
+
+render_setor_2 proc
+    mov bl, 04h  ; Cor vermhlo para o texto
+    xor dx, dx
+    mov cx, LENGTH_SETOR2
+    
+    ; Define a posi??o inicial para renderizar cada linha (coluna = 10, linha = 2)
+    mov dh, 10
+    mov dl, 2
+
+    mov si, offset setor2_l1
+    call render_string
+    inc dh
+    mov si, offset setor2_l2
+    call render_string
+    inc dh 
+    mov si, offset setor2_l3
+    call render_string
+    inc dh
+    mov si, offset setor2_l4
+    call render_string
+    inc dh
+    mov si, offset setor2_l5
+    call render_string
+
+    ret
+endp
+
+render_setor_3 proc
+    mov bl, 01h  ; Cor azul para o texto
+    xor dx, dx
+    mov cx, LENGTH_SETOR3
+    
+    ; Define a posi??o inicial para renderizar cada linha (coluna = 10, linha = 2)
+    mov dh, 10
+    mov dl, 2
+
+    mov si, offset setor3_l1
+    call render_string
+    inc dh
+    mov si, offset setor3_l2
+    call render_string
+    inc dh 
+    mov si, offset setor3_l3
+    call render_string
+    inc dh
+    mov si, offset setor3_l4
+    call render_string
+    inc dh
+    mov si, offset setor3_l5
+    call render_string
+
+    ret
+endp
+
+clear_screen proc
+    ; Configura o segmento de v?deo para A000h
+    mov ax, 0A000h
+    mov es, ax            ; Especifica o segmento de mem?ria de v?deo
+
+    ; Inicia a posi??o de mem?ria de v?deo em 0:0
+    xor di, di            ; DI = 0 (in?cio da mem?ria de v?deo)
+
+    ; Preenche toda a tela (320 * 200 = 64000 bytes) com a cor preta (0)
+    mov cx, 64000         ; N?mero total de pixels
+    xor al, al
+
+    rep stosb                 ; Preenche cada byte (pixel) com a cor em AL
+
+    ret
+endp
+
 start:
     mov ax, @data
     mov ds, ax 
@@ -485,8 +631,11 @@ start:
     
     ;mov al, 1
     ;call render_starting_screen
-    call render_game_screen
-        
+    
+    call render_setor_1
+    ;call render_game_screen
+    
     ;game_loop:
         ;jmp game_loop
+        
 end start
