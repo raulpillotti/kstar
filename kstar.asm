@@ -5,15 +5,16 @@
 .data
     max_line_size equ 40 
     
-    title_l1 db ' _ __     ___    _              ', 0
-    title_l2 db '| / /___ / __> _| |_  ___  _ _  ', 0
-    title_l3 db '|  \|___|\__ \  | |  <_> ||  _> ', 0
-    title_l4 db '|_\_\    <___/  |_|  <___||_|   ', 0
-    title_l5 db ' ___        _             _ ', 0
-    title_l6 db '| . \ ___ _| |_ _ _  ___ | |', 0
-    title_l7 db '|  _/<_> | | | |  _>/ . \| |', 0
-    title_l8 db '|_|  <___| |_| |_|  \___/|_|', 0
-    title_line_size equ 30
+    title_l1 db '  _  __       ___   _                 ',0
+    title_l2 db ' | |/ / ___  / __| | |_   __ _   _ _  ',0
+    title_l3 db ' |   < |___| \__ \ |  _| / _` | |  _| ',0
+    title_l4 db ' |_|\_\      |___/  \__| \__,_| |_|   ',0
+    title_l5 db '   ___          _                 _   ',0
+    title_l6 db '  | _ \  __ _  | |_   _ _   ___  | |  ',0
+    title_l7 db '  |  _/ / _` | |  _| |  _| / _ \ | |  ',0
+    title_l8 db '  |_|   \__,_|  \__| |_|   \___/ |_|  ',0
+                                   
+    title_line_size equ 38
     
     button_line_size equ 11
     btn_jogar_l1 db 218,196,196,196,196,196,196,196,196,196,191,0
@@ -250,7 +251,10 @@ render_title proc
     mov bl, 0ah
     xor dx, dx
     mov cx, title_line_size
-    mov dl, 5
+    
+    ; Define a posi??o inicial para renderizar cada linha (coluna = 1, linha = 1)
+    mov dh, 1
+    mov dl, 1
     
     mov si, offset title_l1
     call render_string
@@ -266,7 +270,7 @@ render_title proc
     inc dh
     mov si, offset title_l5   
     call render_string
-    inc dh    
+    inc dh
     mov si, offset title_l6   
     call render_string
     inc dh
@@ -627,9 +631,9 @@ start:
     int 10H           
     
     ;mov al, 1
-    ;call render_starting_screen
+    call render_starting_screen
     
-    call render_setor_1
+    ;call render_setor_1
     ;call render_game_screen
     
     ;game_loop:
