@@ -5,15 +5,16 @@
 .data
     max_line_size equ 40 
     
-    title_l1 db ' _ __     ___    _              ', 0
-    title_l2 db '| / /___ / __> _| |_  ___  _ _  ', 0
-    title_l3 db '|  \|___|\__ \  | |  <_> ||  _> ', 0
-    title_l4 db '|_\_\    <___/  |_|  <___||_|   ', 0
-    title_l5 db ' ___        _             _ ', 0
-    title_l6 db '| . \ ___ _| |_ _ _  ___ | |', 0
-    title_l7 db '|  _/<_> | | | |  _>/ . \| |', 0
-    title_l8 db '|_|  <___| |_| |_|  \___/|_|', 0
-    title_line_size equ 30
+    title_l1 db '  _  __       ___   _                 ',0
+    title_l2 db ' | |/ / ___  / __| | |_   __ _   _ _  ',0
+    title_l3 db ' |   < |___| \__ \ |  _| / _` | |  _| ',0
+    title_l4 db ' |_|\_\      |___/  \__| \__,_| |_|   ',0
+    title_l5 db '   ___          _                 _   ',0
+    title_l6 db '  | _ \  __ _  | |_   _ _   ___  | |  ',0
+    title_l7 db '  |  _/ / _` | |  _| |  _| / _ \ | |  ',0
+    title_l8 db '  |_|   \__,_|  \__| |_|   \___/ |_|  ',0
+                                   
+    title_line_size equ 38
     
     button_line_size equ 11
     btn_jogar_l1 db 218,196,196,196,196,196,196,196,196,196,191,0
@@ -55,15 +56,25 @@
                0,0,09h,09h,0,0,0,0,0,0,0,0,0,0,0, \
                09h,09h,09h,09h,09h,09h,09h,09h,09h,09h,09h,09h,0,0,0,
     
-blue_ship_inverted db 0,0,0,9,9,9,9,9,9,9,9,9,9,9,9, \
-                     0,0,0,0,0,0,0,0,0,0,0,9,9,0,0, \
-                     0,0,0,0,0,0,0,0,0,0,0,9,9,0,0, \
-                     0,0,0,0,0,0,0,0,9,9,9,9,9,0,0, \
-                     9,9,9,9,9,9,9,9,9,9,9,9,9,0,0, \
-                     0,0,0,0,0,0,0,0,9,9,9,9,9,0,0, \
-                     0,0,0,0,0,0,0,0,0,0,0,9,9,0,0, \
-                     0,0,0,0,0,0,0,0,0,0,0,9,9,0,0, \
-                     0,0,0,9,9,9,9,9,9,9,9,9,9,9,9,
+    blue_ship_inverted db 0,0,0,9,9,9,9,9,9,9,9,9,9,9,9, \
+                         0,0,0,0,0,0,0,0,0,0,0,9,9,0,0, \
+                         0,0,0,0,0,0,0,0,0,0,0,9,9,0,0, \
+                         0,0,0,0,0,0,0,0,9,9,9,9,9,0,0, \
+                         9,9,9,9,9,9,9,9,9,9,9,9,9,0,0, \
+                         0,0,0,0,0,0,0,0,9,9,9,9,9,0,0, \
+                         0,0,0,0,0,0,0,0,0,0,0,9,9,0,0, \
+                         0,0,0,0,0,0,0,0,0,0,0,9,9,0,0, \
+                         0,0,0,9,9,9,9,9,9,9,9,9,9,9,9,
+                         
+    bullet db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, \
+        0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, \
+        0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, \
+        0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, \
+        0,15,0,15,0,15,0,15,0,15,0,15,0,15,0, \
+        0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, \
+        0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, \
+        0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, \
+        0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 
 
     white_ship db    15,15,15,15,15,15,15,15,15,15,15,15,0,0,0, \
@@ -85,29 +96,36 @@ blue_ship_inverted db 0,0,0,9,9,9,9,9,9,9,9,9,9,9,9, \
     0,0,12,12,0,0,0,0,0,0,0,0,0,0,0, \
     0,0,12,12,0,0,0,0,0,0,0,0,0,0,0, \
     12,12,12,12,12,12,12,12,12,12,12,12,0,0,0,
-
-    setor1 db '   _____      __                ___ ', \
-              '  / ___/___  / /_____  _____   <  / ', \
-              '  \__ \/ _ \/ __/ __ \/ ___/   / /  ', \
-              ' ___/ /  __/ /_/ /_/ / /      / /   ', \
-              '/____/\___/\__/\____/_/      /_/    ', 0
     
-    setor2 db '   _____      __                ___  ', \
-              '  / ___/___  / /_____  _____   |__ \ ', \
-              '  \__ \/ _ \/ __/ __ \/ ___/   __/ / ', \
-              ' ___/ /  __/ /_/ /_/ / /      / __/  ', \
-              '/____/\___/\__/\____/_/      /____/  ', 0
-                                        
-    setor3 db '   _____      __                _____ ', \
-              '  / ___/___  / /_____  _____   |__  / ', \
-              '  \__ \/ _ \/ __/ __ \/ ___/    /_ <  ', \
-              ' ___/ /  __/ /_/ /_/ / /      ___/ /  ', \
-              '/____/\___/\__/\____/_/      /____/   ', 0
+    ; Definir o texto em ASCII para o setor 1
+    setor1_l1 db '   _____      __                ___ ', 0
+    setor1_l2 db '  / ___/___  / /_____  _____   <  / ', 0
+    setor1_l3 db '  \__ \/ _ \/ __/ __ \/ ___/   / /  ', 0
+    setor1_l4 db ' ___/ /  __/ /_/ /_/ / /      / /   ', 0
+    setor1_l5 db '/____/\___/\__/\____/_/      /_/    ', 0
+    LENGTH_SETOR1 equ 37
 
-    selected_option dw 0
+    setor2_l1 db '   _____      __                ___  ', 0
+    setor2_l2 db '  / ___/___  / /_____  _____   |__ \ ', 0
+    setor2_l3 db '  \__ \/ _ \/ __/ __ \/ ___/   __/ / ', 0
+    setor2_l4 db ' ___/ /  __/ /_/ /_/ / /      / __/  ', 0
+    setor2_l5 db '/____/\___/\__/\____/_/      /____/  ', 0
+    LENGTH_SETOR2 equ 38
+    
+    setor3_l1 db '   _____      __                _____ ', 0
+    setor3_l2 db '  / ___/___  / /_____  _____   |__  / ', 0
+    setor3_l3 db '  \__ \/ _ \/ __/ __ \/ ___/    /_ <  ', 0
+    setor3_l4 db ' ___/ /  __/ /_/ /_/ / /      ___/ /  ', 0
+    setor3_l5 db '/____/\___/\__/\____/_/      /____/   ', 0
+    LENGTH_SETOR3 equ 39               
+
+    SELECTED_OPTION db 0
+    MAX_OPTION equ 1
+    MIN_OPTION equ 0
 
     cr equ 13
     lf equ 10    
+    
 
 .code
 
@@ -124,6 +142,7 @@ render_pixel_string proc
     mul bx             
     add di, ax         
     rep movsb
+    inc ax
     
     pop bx
     pop ax
@@ -139,9 +158,7 @@ endp
 
 render_model_right proc
         push ax
-        
-        xor bl, bl
-        call render_model
+        call delete_model
         
         inc di
         mov bl, cl
@@ -151,18 +168,21 @@ render_model_right proc
 endp
 
 render_model_left proc
-        xor bl, bl
-        call render_model
+        push ax
+        call delete_model
+        pop ax
         
+        push ax
         dec di
         mov bl, cl
         call render_model
+        pop ax
         ret
 endp
 
 render_model proc
-    push cx
     push ax
+    push cx
     push di
     mov cx, MODEL_HEIGHT
  
@@ -202,11 +222,9 @@ render_model proc
         pop cx
         loop render_model_line_loop
     
-    int 10h
-    
     pop di
-    pop ax
     pop cx
+    pop ax
     
     ret
 endp
@@ -237,7 +255,10 @@ render_title proc
     mov bl, 0ah
     xor dx, dx
     mov cx, title_line_size
-    mov dl, 5
+    
+    ; Define a posi??o inicial para renderizar cada linha (coluna = 1, linha = 1)
+    mov dh, 1
+    mov dl, 1
     
     mov si, offset title_l1
     call render_string
@@ -253,7 +274,7 @@ render_title proc
     inc dh
     mov si, offset title_l5   
     call render_string
-    inc dh    
+    inc dh
     mov si, offset title_l6   
     call render_string
     inc dh
@@ -267,56 +288,109 @@ endp
 
 ; Subprograma para desenhar a caixa do bot?o com cor diferente dependendo da sele??o
 render_button_jogar proc
-    mov cx, button_line_size
-    xor dx, dx
-    mov dh, 42
-    mov dl, 7
-    cmp al, 1
-    je jogar_selected
-    
-    mov bl, 0Fh
-    jmp render_jogar_normal
-    
-    jogar_selected:
-        mov bl, 0Ch  ; Cor vermelho claro (selecionado)
-    
-    render_jogar_normal:
-        mov si, offset btn_jogar_l1
-        call render_string
-        inc dh
-        mov si, offset btn_jogar_l2
-        call render_string
-        inc dh
-        mov si, offset btn_jogar_l3
-        call render_string
-        add dh, 2
-        ;push ax
+  mov cx, button_line_size
+  xor dx, dx
+  mov dh, 42
+  mov dl, 7
+  
+  mov al, [SELECTED_OPTION]
+  cmp al, 0
+  je jogar_selected         ; Se sim, muda a cor
+
+  mov bl, 0Fh               ; Cor branca normal
+  jmp render_jogar_normal   ; Pula para a renderização
+
+  jogar_selected:
+    mov bl, 0Ch               ; Cor vermelho claro (selecionado)
+
+  render_jogar_normal:
+    mov si, offset btn_jogar_l1
+    call render_string        ; Renderiza a primeira linha do botão
+    inc dh                    ; Move para a próxima linha vertical
+    mov si, offset btn_jogar_l2
+    call render_string        ; Renderiza a segunda linha do botão
+    inc dh
+    mov si, offset btn_jogar_l3
+    call render_string        ; Renderiza a terceira linha do botão
+    add dh, 2                 ; Espaçamento extra após o botão
     ret
 endp
 
 render_button_sair proc
-    mov cx, button_line_size
-    cmp al, 2
-    je sair_selected
+  mov cx, button_line_size  ; Tamanho da linha do botão
+  xor dx, dx                ; Limpa o DX para inicializar
+  mov dh, 50                ; Posição vertical do botão "Sair"
+  mov dl, 7                 ; Posição horizontal do botão "Sair"
 
-    mov bl, 0Fh
-    jmp render_sair_normal
-    
-    sair_selected:
-        mov bl, 0Ch
-    
-    render_sair_normal:
-        mov si, offset btn_sair_l1
-        call render_string
-        inc dh
-        mov si, offset btn_sair_l2
-        call render_string
-        inc dh
-        mov si, offset btn_sair_l3
-        call render_string
-        inc dh
-        ;push ax
+  mov al, [SELECTED_OPTION]   ; Carrega a opção selecionada
+  cmp al, 1     ; Verifica se "Sair" está selecionado
+  je sair_selected          ; Se sim, muda a cor
+
+  mov bl, 0Fh               ; Cor branca normal
+  jmp render_sair_normal    ; Pula para a renderização
+
+  sair_selected:
+    mov bl, 0Ch               ; Cor vermelho claro (selecionado)
+
+  render_sair_normal:
+    mov si, offset btn_sair_l1
+    call render_string        ; Renderiza a primeira linha do botão
+    inc dh                    ; Move para a próxima linha vertical
+    mov si, offset btn_sair_l2
+    call render_string        ; Renderiza a segunda linha do botão
+    inc dh
+    mov si, offset btn_sair_l3
+    call render_string        ; Renderiza a terceira linha do botão
     ret
+endp
+
+delete_model proc
+    xor bl, bl
+    call render_model
+    ret
+endp
+
+;linha inicial em ax
+render_enemy_ship proc
+    mov di, SCREEN_WIDTH - MODEL_WIDTH
+    push ax
+    call delete_model
+
+
+    move_left_loop:
+        cmp di, 0
+        je end_render_enemy_ship
+        
+        ;;;;;;;;;;;;;;; Verifica??o de colis?o;;;;;;;
+        push di
+        push ax
+        push bx
+
+        xor bx, bx
+        mov bx, 320           
+        mul bx               
+        add di, ax
+        
+        ;se encontra pixel branco deveria apagar a nave
+        cmp byte ptr [es: di], 15
+        je end_render_enemy_ship
+        pop bx
+        pop ax
+        pop di
+        ;;;;;;;;;;;;;;;;;;;;;;;
+
+        push ax
+        call set_execution_pace
+        mov cl, 9
+        mov bh, 1
+        pop ax
+        call render_model_left
+        jmp move_left_loop  
+    
+    end_render_enemy_ship: 
+        call delete_model
+        pop ax
+        ret
 endp
 
 ; Tela inicial
@@ -350,32 +424,111 @@ render_starting_screen proc
     ret
 endp
 
-; Captura a entrada e move a seleção ou confirma
-handle_input proc
-  mov ah, 00h
-  int 16h ; Espera uma tecla
+render_game_screen proc
+    push ax
+    xor di, di
+   
+    mov bl, 15
+    mov ax, 20
+    call render_model
+    
+    mov bl, 15
+    mov ax, 40
+    call render_model
+    
+    mov bl, 15
+    mov ax, 60
+    call render_model
+    
+    mov bl, 15
+    mov ax, 80
+    call render_model
+    
+    mov bl, 15
+    mov ax, 100
+    call render_model
+    
+    mov bl, 15
+    mov ax, 120
+    call render_model
+    
+    mov bl, 15
+    mov ax, 140
+    call render_model
+    
+    mov bl, 15
+    mov ax, 160
+    call render_model
+    
+    mov di, 32
+    mov bl, 15
+    mov ax, 100
+    call render_model
+    
+    mov ax, 100
+    call render_enemy_ship
+    mov ax, 80
+    call render_enemy_ship
+    pop ax
+    ret
+endp
 
-  cmp al, 72h ; Seta para cima
+handle_input proc
+  mov ah, 01h       
+  int 16h
+  jz no_key 
+
+  mov ah, 00h       
+  int 16h
+
+  cmp al, 72h ; seta para cima
   je move_up
-  cmp al, 80h ; Seta para baixo
+
+  cmp al, 80h ; seta para baixo   
   je move_down
-  cmp al, 0Dh ; Enter
+
+  cmp al, 0Dh ; Enter       
   je execute_option
 
-  jmp handle_input
+  no_key:
+    ret
 
   move_up:
-    dec selected_option
-    jmp render_menu
+    mov al, [SELECTED_OPTION]
+    dec al
+
+    cmp al, MIN_OPTION
+    jl set_min_option ;Se AL < MIN_OPTION
+
+    mov [SELECTED_OPTION], al
+    jmp render_starting_screen
+
+  set_min_option:
+    mov al, MIN_OPTION
+    mov [SELECTED_OPTION], al
+    jmp render_starting_screen
 
   move_down:
-    inc selected_option
-    jmp render_menu
+    mov al, [SELECTED_OPTION]
+    inc al
+
+    cmp al, MAX_OPTION
+    jg set_max_option ; Se AL > MAX_OPTION
+
+    mov [SELECTED_OPTION], al
+    jmp render_starting_screen
+
+  set_max_option:
+    mov al, MAX_OPTION
+    mov [SELECTED_OPTION], al
+    jmp render_starting_screen
 
   execute_option:
-    cmp selected_option, 0
+    mov al, [SELECTED_OPTION]
+    cmp al, 0
     je start_game
-    cmp selected_option, 1
+
+    cmp al, 1
     je exit_program
     ret
 
@@ -391,19 +544,135 @@ handle_input endp
 
 
 set_execution_pace:
+    push ax
     xor ax, ax
     mov ah, 86H
     mov cx, 00       ; 16 bits mais significativos
-    mov dx, 6000H          ; 16 bits menos significativos
+    mov dx, 600H          ; 16 bits menos significativos
     int 15h
+    pop ax
     ret
 endp
 
 render_setor_1 proc
+    mov bl, 05h  ; Cor magenta para o texto
+    xor dx, dx
+    mov cx, LENGTH_SETOR1
+    
+    ; Define a posi??o inicial para renderizar cada linha (coluna = 10, linha = 2)
+    mov dh, 10
+    mov dl, 2
 
+    mov si, offset setor1_l1
+    call render_string
+    inc dh
+    mov si, offset setor1_l2
+    call render_string
+    inc dh 
+    mov si, offset setor1_l3
+    call render_string
+    inc dh
+    mov si, offset setor1_l4
+    call render_string
+    inc dh
+    mov si, offset setor1_l5
+    call render_string
 
+    call delay_4_seconds
+    call clear_screen
+    call render_game_screen
+    
+    ret
+endp
 
-  ret
+render_setor_2 proc
+    mov bl, 04h  ; Cor vermhlo para o texto
+    xor dx, dx
+    mov cx, LENGTH_SETOR2
+    
+    ; Define a posi??o inicial para renderizar cada linha (coluna = 10, linha = 2)
+    mov dh, 10
+    mov dl, 2
+
+    mov si, offset setor2_l1
+    call render_string
+    inc dh
+    mov si, offset setor2_l2
+    call render_string
+    inc dh 
+    mov si, offset setor2_l3
+    call render_string
+    inc dh
+    mov si, offset setor2_l4
+    call render_string
+    inc dh
+    mov si, offset setor2_l5
+    call render_string
+
+    call delay_4_seconds
+    call clear_screen
+    
+    ret
+endp
+
+render_setor_3 proc
+    mov bl, 01h  ; Cor azul para o texto
+    xor dx, dx
+    mov cx, LENGTH_SETOR3
+    
+    ; Define a posi??o inicial para renderizar cada linha (coluna = 10, linha = 2)
+    mov dh, 10
+    mov dl, 2
+
+    mov si, offset setor3_l1
+    call render_string
+    inc dh
+    mov si, offset setor3_l2
+    call render_string
+    inc dh 
+    mov si, offset setor3_l3
+    call render_string
+    inc dh
+    mov si, offset setor3_l4
+    call render_string
+    inc dh
+    mov si, offset setor3_l5
+    call render_string
+    
+    call delay_4_seconds
+    call clear_screen
+
+    ret
+endp
+
+delay_4_seconds proc
+    
+    ; 4.000.000 decimal ? 3D0900 hexadecimal
+
+    mov cx, 003Dh      ; Parte alta do valor em microssegundos
+    mov dx, 0900h      ; Parte baixa do valor em microssegundos
+
+    mov ah, 86h        ; Fun??o de atraso da interrup??o 15h
+    int 15h
+    
+    ret
+endp
+
+clear_screen proc
+    ; Configura o segmento de v?deo para A000h
+    mov ax, 0A000h
+    mov es, ax            ; Especifica o segmento de mem?ria de v?deo
+
+    ; Inicia a posi??o de mem?ria de v?deo em 0:0
+    xor di, di            ; DI = 0 (in?cio da mem?ria de v?deo)
+
+    ; Preenche toda a tela (320 * 200 = 64000 bytes) com a cor preta (0)
+    mov cx, 64000         ; N?mero total de pixels
+    xor al, al
+
+    rep stosb                 ; Preenche cada byte (pixel) com a cor em AL
+
+    ret
 endp
 
 start:
@@ -419,7 +688,10 @@ start:
     mov al, 13H       
     int 10H           
     
-    mov al, 1
     call render_starting_screen
-            
+    
+    game_loop:
+        call handle_input
+        jmp game_loop
+
 end start
