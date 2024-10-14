@@ -5,6 +5,8 @@
 .data
     max_line_size equ 40 
     
+    seed dw 12345    ; Semente inicial
+
     title_l1 db '  _  __       ___   _                 ',0
     title_l2 db ' | |/ / ___  / __| | |_   __ _   _ _  ',0
     title_l3 db ' |   < |___| \__ \ |  _| / _` | |  _| ',0
@@ -416,9 +418,26 @@ render_starting_screen proc
         mov ax, 100
         call render_model_left
         jmp ship_left_loop
-        
     ret
 endp
+
+random_ax:
+    push bx
+    push dx
+    
+    mov ax, [seed]    
+    mov bx, 1117
+    mul bx           
+    add ax, 12345    
+    mov [seed], ax
+    xor dx, dx        
+    mov bx, 201       
+    div bx           
+    mov ax, dx     
+    
+    pop dx
+    pop bx
+    ret
 
 render_game_screen proc
     push ax
@@ -461,17 +480,15 @@ render_game_screen proc
     mov ax, 100
     call render_model
     
-    ;; cx vai receber o n?mero de naves m?ximas level 1 = 10, level 2 = 15, level 3 = 15
+    ;; cx vai receber o n?mero de naves m?ximas level 1 = 10, level 2 = 15, level 3 = 20
     ;; precisa descobrir como controlar a posi??o de v?rias naves simult?neas
     mov cx, 10
+
     loop_render_enemy_ships:
         push cx
-        mov ax, 100
+        call random_ax
         call render_enemy_ship
-        ;mov ax, 80
-        ;call render_enemy_ship
         pop cx
-        ;pop ax
         loop loop_render_enemy_ships  
     ret
 endp
@@ -574,6 +591,8 @@ render_setor_2 proc
     ret
 endp
 
+
+
 render_setor_3 proc
     mov bl, 01h  ; Cor azul para o texto
     xor dx, dx
@@ -646,8 +665,8 @@ start:
     ;mov al, 1
     ;call render_starting_screen
     
-    call render_setor_1
-    ;call render_game_screen
+    ;all render_setor_1
+    call render_game_screen
     
     game_loop:
         jmp game_loop
