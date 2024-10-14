@@ -164,6 +164,7 @@ render_model_right proc
 endp
 
 render_model_left proc
+        push cx
         push ax
         call delete_model
         pop ax
@@ -173,6 +174,7 @@ render_model_left proc
         mov bl, cl
         call render_model
         pop ax
+        pop cx
         ret
 endp
 
@@ -346,6 +348,7 @@ endp
 render_enemy_ship proc
     mov di, SCREEN_WIDTH - MODEL_WIDTH
     push ax
+    push cx
     call delete_model
 
 
@@ -381,6 +384,7 @@ render_enemy_ship proc
     
     end_render_enemy_ship: 
         call delete_model
+        pop cx
         pop ax
         ret
 endp
@@ -457,11 +461,18 @@ render_game_screen proc
     mov ax, 100
     call render_model
     
-    mov ax, 100
-    call render_enemy_ship
-    mov ax, 80
-    call render_enemy_ship
-    pop ax
+    ;; cx vai receber o n?mero de naves m?ximas level 1 = 10, level 2 = 15, level 3 = 15
+    ;; precisa descobrir como controlar a posi??o de v?rias naves simult?neas
+    mov cx, 10
+    loop_render_enemy_ships:
+        push cx
+        mov ax, 100
+        call render_enemy_ship
+        ;mov ax, 80
+        ;call render_enemy_ship
+        pop cx
+        ;pop ax
+        loop loop_render_enemy_ships  
     ret
 endp
 
@@ -487,11 +498,13 @@ endp
 
 set_execution_pace:
     push ax
+    push cx
     xor ax, ax
     mov ah, 86H
     mov cx, 00       ; 16 bits mais significativos
     mov dx, 600H          ; 16 bits menos significativos
     int 15h
+    pop cx
     pop ax
     ret
 endp
@@ -520,7 +533,9 @@ render_setor_1 proc
     mov si, offset setor1_l5
     call render_string
 
-    call delay_4_seconds
+    mov cx, 003Dh     
+    mov dx, 0900h  
+    call sleep
     call clear_screen
     call render_game_screen
     
@@ -551,7 +566,9 @@ render_setor_2 proc
     mov si, offset setor2_l5
     call render_string
 
-    call delay_4_seconds
+    mov cx, 003Dh      
+    mov dx, 0900h  
+    call sleep
     call clear_screen
     
     ret
@@ -581,19 +598,15 @@ render_setor_3 proc
     mov si, offset setor3_l5
     call render_string
     
-    call delay_4_seconds
+    mov cx, 003Dh     
+    mov dx, 0900h  
+    call sleep
     call clear_screen
 
     ret
 endp
 
-delay_4_seconds proc
-    
-    ; 4.000.000 decimal ? 3D0900 hexadecimal
-
-    mov cx, 003Dh      ; Parte alta do valor em microssegundos
-    mov dx, 0900h      ; Parte baixa do valor em microssegundos
-
+sleep proc
     mov ah, 86h        ; Fun??o de atraso da interrup??o 15h
     int 15h
     
@@ -631,12 +644,12 @@ start:
     int 10H           
     
     ;mov al, 1
-    call render_starting_screen
+    ;call render_starting_screen
     
-    ;call render_setor_1
+    call render_setor_1
     ;call render_game_screen
     
-    ;game_loop:
-        ;jmp game_loop
+    game_loop:
+        jmp game_loop
         
 end start
