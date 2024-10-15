@@ -155,6 +155,8 @@ endp
 ;bl = model, bh = inverter(1), ax = linha, di = coluna
 
 render_model_right proc
+        push bx
+        push cx
         push ax
         call delete_model
         
@@ -162,10 +164,13 @@ render_model_right proc
         mov bl, cl
         call render_model
         pop ax
+        pop cx
+        pop bx
         ret
 endp
 
 render_model_left proc
+        push bx
         push cx
         push ax
         call delete_model
@@ -175,8 +180,10 @@ render_model_left proc
         dec di
         mov bl, cl
         call render_model
+        
         pop ax
         pop cx
+        pop bx
         ret
 endp
 
@@ -239,6 +246,7 @@ render_string proc
     ; CX - tamanho da string (n?mero de caracteres)
     ; DH, DL - posi??o de in?cio (linha e coluna)
     ; BL - cor
+    push bx
     push es
     mov ah, 13h            
     mov al, 1              
@@ -248,6 +256,7 @@ render_string proc
     mov bp, si             
     int 10h                
     pop es
+    pop bx
     ret                   
 render_string endp
 
@@ -317,14 +326,17 @@ endp
 
 render_button_sair proc
     mov cx, button_line_size
-    cmp al, 2
+    xor dx, dx
+    mov dh, 45
+    mov dl, 7
+    cmp al, 1
     je sair_selected
-
+    
     mov bl, 0Fh
     jmp render_sair_normal
     
     sair_selected:
-        mov bl, 0Ch
+        mov bl, 0Ch  ; Cor vermelho claro (selecionado)
     
     render_sair_normal:
         mov si, offset btn_sair_l1
@@ -335,7 +347,7 @@ render_button_sair proc
         inc dh
         mov si, offset btn_sair_l3
         call render_string
-        inc dh
+        add dh, 2
         ;push ax
     ret
 endp
@@ -391,18 +403,56 @@ render_enemy_ship proc
         ret
 endp
 
+
+
 ; Tela inicial
 render_starting_screen proc
     call render_title
+    mov al, 1
     call render_button_jogar
+    xor al, al
     call render_button_sair
-    xor di, di
+    jmp starting_screen_loop
     
+    handle_enter_pressed:
+        ret
+        
+    set_jogar_selected:
+        mov al, 1
+        call render_button_jogar
+        xor al, al
+        call render_button_sair
+        xor ah, ah
+        int 16h
+        mov bx, 1
+        push bx
+        jmp ship_right_loop
+        
+    set_sair_selected:
+        mov al, 1
+        call render_button_sair
+        xor al, al
+        call render_button_jogar
+        xor ah, ah
+        int 16h
+        xor bx, bx
+        push bx
+        jmp ship_right_loop
+        
+    starting_screen_loop:
+        mov ah, 01h
+        int 16h
+        cmp ah, 50h
+        je set_sair_selected
+        cmp ah, 48h
+        je set_jogar_selected
+        cmp ah, 1ch
+        je handle_enter_pressed
+        
     ship_right_loop:
         call set_execution_pace
         cmp di, SCREEN_WIDTH - MODEL_WIDTH
         je ship_left_loop
-        
         mov cl, 15
         xor bh, bh
         mov ax, 100
@@ -412,7 +462,7 @@ render_starting_screen proc
       ship_left_loop:
         call set_execution_pace
         cmp di, 0
-        je ship_right_loop
+        je starting_screen_loop
         mov cl, 9
         mov bh, 1
         mov ax, 100
@@ -518,8 +568,8 @@ set_execution_pace:
     push cx
     xor ax, ax
     mov ah, 86H
-    mov cx, 00       ; 16 bits mais significativos
-    mov dx, 600H          ; 16 bits menos significativos
+    mov cx, 0       ; 16 bits mais significativos
+    mov dx, 700H          ; 16 bits menos significativos
     int 15h
     pop cx
     pop ax
@@ -628,7 +678,6 @@ endp
 sleep proc
     mov ah, 86h        ; Fun??o de atraso da interrup??o 15h
     int 15h
-    
     ret
 endp
 
@@ -662,13 +711,18 @@ start:
     mov al, 13H       
     int 10H           
     
-    ;mov al, 1
-    ;call render_starting_screen
+    mov ax, 1
+    call render_starting_screen
+    call clear_screen
     
-    ;all render_setor_1
-    call render_game_screen
+    pop bx
+    cmp bx, 0
+    je quit
+    call render_setor_1
+    ;call render_game_screen
     
-    game_loop:
-        jmp game_loop
+    ;game_loop:
+    ;jmp game_loop
+    quit: end start
         
 end start
