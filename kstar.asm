@@ -408,6 +408,8 @@ endp
 ; Tela inicial
 render_starting_screen proc
     call render_title
+    mov bx, 1
+    push bx
     mov al, 1
     call render_button_jogar
     xor al, al
@@ -415,9 +417,11 @@ render_starting_screen proc
     jmp starting_screen_loop
     
     handle_enter_pressed:
+        pop bx
         ret
         
     set_jogar_selected:
+        pop bx
         mov al, 1
         call render_button_jogar
         xor al, al
@@ -429,6 +433,7 @@ render_starting_screen proc
         jmp ship_right_loop
         
     set_sair_selected:
+        pop bx
         mov al, 1
         call render_button_sair
         xor al, al
@@ -715,9 +720,9 @@ start:
     call render_starting_screen
     call clear_screen
     
-    pop bx
     cmp bx, 0
     je quit
+    xor bx, bx
     call render_setor_1
     ;call render_game_screen
     
