@@ -135,6 +135,11 @@
     game_over_l10 db ' \___/  \_/ \___|_|   ',0
     LENGTH_OVER equ 22              
     
+    score_label db 'SCORE:', 0
+    score_value db '00000', 0
+    tempo_label db 'TEMPO:', 0
+    tempo_value dw 60
+
     cr equ 13
     lf equ 10    
     
@@ -532,6 +537,71 @@ render_starting_screen proc
     ret
 endp
 
+start_timer proc
+    mov tempo_value, 60  ; Define o tempo inicial para 60 segundos
+
+    timer_loop:
+        call render_status_bar   ; Exibe o tempo atualizado na tela
+
+        ; Verifica se o tempo chegou a zero
+        cmp tempo_value, 0
+        je end_timer             ; Se for zero, termina o loop
+
+        mov cx, 000Fh
+        mov dx, 4240h
+        call sleep
+
+        ; Decrementa o tempo
+        dec tempo_value
+        jmp timer_loop
+
+    end_timer:
+        call render_game_over  ; Exibe a tela de game over
+        ret
+endp
+
+render_status_bar proc
+    ; Desenha a barra de status no topo da tela
+    push ax
+    push dx
+    push cx
+    
+    ; Renderizar "SCORE:" na posi??o (linha 0, coluna 0)
+    mov bl, 0Fh  ; Cor branca
+    mov cx, 6          ; Tamanho do texto 'SCORE:'
+    mov dh, 0         ; Posi??o: linha 0, coluna 0
+    mov dl, 1          ; Coluna 7 (ap?s 'SCORE:')
+    mov si, offset score_label
+    call render_string
+
+    ; Renderizar o valor do score na posi??o (linha 0, coluna 7)
+    mov bl, 02h  ; Cor verde
+    mov cx, 5          ; Tamanho do valor do score
+    mov dl, 7          ; Coluna 7 (ap?s 'SCORE:')
+    mov si, offset score_value
+    call render_string
+
+    ; Renderizar "TEMPO:" na posi??o (linha 0, coluna 30)
+    mov bl, 0Fh  ; Cor branca
+    mov cx, 6          ; Tamanho do texto 'TEMPO:'
+    mov dl, 30         ; Coluna 30 (alinhado ? direita)
+    mov si, offset tempo_label
+    call render_string
+
+    ; Renderizar o valor do tempo restante na posi??o (linha 0, coluna 37)
+    mov bl, 02h  ; Cor verde
+    mov cx, 2          ; Tamanho do valor do tempo (2 d?gitos)
+    mov dl, 37         ; Coluna 37 (ap?s 'TEMPO:')
+    mov si, offset tempo_value
+    call render_string
+
+    ; Restaurar registradores
+    pop cx
+    pop dx
+    pop ax
+    ret
+endp
+
 random_ax:
     push bx
     push dx
@@ -602,25 +672,6 @@ render_game_screen proc
         pop cx
         loop loop_render_enemy_ships  
     ret
-endp
-
-handle_input proc
-    push ax
-    xor ax, ax
-    int 16h ; Espera por uma tecla pressionada, retorna o c?digo em AL
-    cmp al, 1
-    je button_jogar
-    cmp al, 0
-    je button_sair
-    button_jogar: 
-        call render_button_jogar
-        jmp end_handle_input
-    button_sair: 
-        call render_button_sair
-        jmp end_handle_input
-    end_handle_input:
-        pop ax
-        ret
 endp
 
 set_ally_model_speed proc
