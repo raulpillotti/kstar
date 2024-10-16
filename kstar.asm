@@ -415,12 +415,8 @@ render_starting_screen proc
     xor al, al
     call render_button_sair
     jmp starting_screen_loop
-    
-    handle_enter_pressed:
-        pop bx
-        ret
         
-    set_jogar_selected:
+    set_jogar_selected_right:
         pop bx
         mov al, 1
         call render_button_jogar
@@ -432,7 +428,7 @@ render_starting_screen proc
         push bx
         jmp ship_right_loop
         
-    set_sair_selected:
+    set_sair_selected_right:
         pop bx
         mov al, 1
         call render_button_sair
@@ -444,18 +440,51 @@ render_starting_screen proc
         push bx
         jmp ship_right_loop
         
+    set_jogar_selected_left:
+        pop bx
+        mov al, 1
+        call render_button_jogar
+        xor al, al
+        call render_button_sair
+        xor ah, ah
+        int 16h
+        mov bx, 1
+        push bx
+        jmp ship_left_loop
+        
+    set_sair_selected_left:
+        pop bx
+        mov al, 1
+        call render_button_sair
+        xor al, al
+        call render_button_jogar
+        xor ah, ah
+        int 16h
+        xor bx, bx
+        push bx
+        jmp ship_left_loop
+        
     starting_screen_loop:
         mov ah, 01h
         int 16h
         cmp ah, 50h
-        je set_sair_selected
+        je set_sair_selected_right
         cmp ah, 48h
-        je set_jogar_selected
+        je set_jogar_selected_right
         cmp ah, 1ch
         je handle_enter_pressed
         
     ship_right_loop:
-        call set_execution_pace
+        mov ah, 01h
+        int 16h
+        cmp ah, 50h
+        je set_sair_selected_right
+        cmp ah, 48h
+        je set_jogar_selected_right
+        cmp ah, 1ch
+        je handle_enter_pressed
+        
+        call set_ally_model_speed
         cmp di, SCREEN_WIDTH - MODEL_WIDTH
         je ship_left_loop
         mov cl, 15
@@ -465,7 +494,16 @@ render_starting_screen proc
         jmp ship_right_loop
         
       ship_left_loop:
-        call set_execution_pace
+        mov ah, 01h
+        int 16h
+        cmp ah, 50h
+        je set_sair_selected_left
+        cmp ah, 48h
+        je set_jogar_selected_left
+        cmp ah, 1ch
+        je handle_enter_pressed
+        
+        call set_ally_model_speed
         cmp di, 0
         je starting_screen_loop
         mov cl, 9
@@ -473,6 +511,10 @@ render_starting_screen proc
         mov ax, 100
         call render_model_left
         jmp ship_left_loop
+        
+        handle_enter_pressed:
+        pop bx
+        ret
     ret
 endp
 
@@ -567,14 +609,24 @@ handle_input proc
         ret
 endp
 
+set_ally_model_speed proc
+    push dx
+    push cx
+    mov cx, 0       ; 16 bits mais significativos
+    mov dx, 0c350h          ; 16 bits menos significativos
+    call sleep
+    pop cx
+    pop ax
+    ret
+endp
 
-set_execution_pace:
+set_execution_pace proc
     push ax
     push cx
     xor ax, ax
     mov ah, 86H
     mov cx, 0       ; 16 bits mais significativos
-    mov dx, 700H          ; 16 bits menos significativos
+    mov dx, 0H          ; 16 bits menos significativos
     int 15h
     pop cx
     pop ax
@@ -645,7 +697,6 @@ render_setor_2 proc
     
     ret
 endp
-
 
 
 render_setor_3 proc
