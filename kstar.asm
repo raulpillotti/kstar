@@ -408,7 +408,7 @@ render_enemy_ship proc
         ;;;;;;;;;;;;;;;;;;;;;;;
 
         push ax
-        call set_execution_pace
+        call set_enemy_model_speed
         mov cl, 9
         mov bh, 1
         pop ax
@@ -661,11 +661,40 @@ render_game_screen proc
     mov ax, 100
     call render_model
     
+    game_loop:
+        push ax
+        call set_ally_model_speed
+        ;mov ah, 01h
+        ;int 16h
+        ;cmp ah, 50h
+        ;je down_pressed
+        ;cmp ah, 48h
+        ;je up_pressed
+        ;cmp ah, 1ch
+        ;je space_pressed
+        ;push ax
+        pop ax
+        call delete_model
+        mov bl, 15
+        inc ax
+        call render_model
+        jmp game_loop
+    
+    up_pressed:
+        inc di
+        call render_model
+        
+    down_pressed:
+        ret
+    space_pressed:
+        ret
+    
     ;; cx vai receber o n?mero de naves m?ximas level 1 = 10, level 2 = 15, level 3 = 20
     ;; precisa descobrir como controlar a posi??o de v?rias naves simult?neas
     mov cx, 10
 
     loop_render_enemy_ships:
+        call set_enemy_model_speed
         push cx
         call random_ax
         call render_enemy_ship
@@ -681,18 +710,16 @@ set_ally_model_speed proc
     mov dx, 0c350h          ; 16 bits menos significativos
     call sleep
     pop cx
-    pop ax
+    pop dx
     ret
 endp
 
-set_execution_pace proc
-    push ax
+set_enemy_model_speed proc
+    push dx
     push cx
-    xor ax, ax
-    mov ah, 86H
-    mov cx, 0       ; 16 bits mais significativos
-    mov dx, 0H          ; 16 bits menos significativos
-    int 15h
+    mov cx, 0      
+    mov dx, 061A8h             
+    call sleep
     pop cx
     pop ax
     ret
@@ -890,8 +917,9 @@ start:
     cmp bx, 0
     je quit
     xor bx, bx
-    call render_setor_1
-    ;call render_game_screen
+    
+    ;call render_setor_1
+    call render_game_screen
     
     ;game_loop:
     ;jmp game_loop
