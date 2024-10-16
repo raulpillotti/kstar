@@ -119,7 +119,21 @@
     setor3_l3 db '  \__ \/ _ \/ __/ __ \/ ___/    /_ <  ', 0
     setor3_l4 db ' ___/ /  __/ /_/ /_/ / /      ___/ /  ', 0
     setor3_l5 db '/____/\___/\__/\____/_/      /____/   ', 0
-    LENGTH_SETOR3 equ 39               
+    LENGTH_SETOR3 equ 39 
+
+    game_over_l1 db  '  ____                       ',0
+    game_over_l2 db  ' / ___| __ _ _ __ ___   ___  ',0
+    game_over_l3 db  '| |  _ / _` | `_ ` _ \ / _ \ ',0
+    game_over_l4 db  '| |_| | (_| | | | | | |  __/ ',0
+    game_over_l5 db  ' \____|\__,_|_| |_| |_|\___| ',0
+    LENGTH_GAME equ 28
+    
+    game_over_l6 db  '  ___                 ',0
+    game_over_l7 db  ' / _ \__   _____ _ __ ',0
+    game_over_l8 db  '| | | \ \ / / _ \  __|',0
+    game_over_l9 db  '| |_| |\ V /  __/ |   ',0
+    game_over_l10 db ' \___/  \_/ \___|_|   ',0
+    LENGTH_OVER equ 22              
     
     cr equ 13
     lf equ 10    
@@ -750,6 +764,57 @@ clear_screen proc
     xor al, al
 
     rep stosb                 ; Preenche cada byte (pixel) com a cor em AL
+
+    ret
+endp
+
+render_game_over proc
+    mov bl, 04h  ; Cor azul para o texto
+    xor dx, dx
+    
+    mov cx, LENGTH_GAME
+    mov dh, 6
+    mov dl, 2
+
+    mov si, offset game_over_l1
+    call render_string
+    inc dh
+    mov si, offset game_over_l2
+    call render_string
+    inc dh 
+    mov si, offset game_over_l3
+    call render_string
+    inc dh
+    mov si, offset game_over_l4
+    call render_string
+    inc dh
+    mov si, offset game_over_l5
+    call render_string
+    
+    mov cx, LENGTH_OVER
+    mov dh, 12
+    mov dl, 17
+
+    mov si, offset game_over_l6
+    call render_string
+    inc dh
+    mov si, offset game_over_l7
+    call render_string
+    inc dh 
+    mov si, offset game_over_l8
+    call render_string
+    inc dh
+    mov si, offset game_over_l9
+    call render_string
+    inc dh
+    mov si, offset game_over_l10
+    call render_string
+    
+    mov cx, 003Dh     
+    mov dx, 0900h  
+    call sleep
+    call clear_screen
+    call render_starting_screen
 
     ret
 endp
