@@ -844,14 +844,6 @@ render_game_screen proc
         pop ax
         mov ah, 0
         
-        push ax
-        ;mov ah, 00
-        ;int 16h
-        ;cmp ah, 50h
-        ;je down_pressed
-        ;cmp ah, 48h
-        ;je up_pressed
-        ;pop ax
         
         call delete_model
         mov bl, 15
@@ -862,15 +854,21 @@ render_game_screen proc
         call random_ax
         call render_enemy_ship_interrupt
         
+        ;push ax
+        mov ah, 01
+        int 16h
+        cmp ah, 50h
+        je down_pressed
+        cmp ah, 48h
+        je up_pressed
+        ;pop ax
         
         
-
         ; aliada
         pop ax
         jmp game_loop
         
     up_pressed:
-        pop ax
         call delete_model
         mov bl, 15
         dec ax
@@ -878,7 +876,6 @@ render_game_screen proc
         jmp game_loop
         
     down_pressed:
-        pop ax
         call delete_model
         mov bl, 15
         inc ax
