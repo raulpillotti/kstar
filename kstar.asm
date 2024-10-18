@@ -6,6 +6,9 @@ model small
     max_line_size equ 40 
     
     seed dw 12345    ; Semente inicial
+    
+    enemy_ship_x dw 160
+    ally_ship_y dw 32
 
     title_l1 db '  _  __       ___   _                 ',0
     title_l2 db ' | |/ / ___  / __| | |_   __ _   _ _  ',0
@@ -830,7 +833,7 @@ render_game_screen proc
         je down_pressed
         
         push di
-        mov di, 32
+        mov di, ally_ship_y
         call set_ally_model_speed
         
         call delete_model
@@ -842,7 +845,7 @@ render_game_screen proc
         call random_ax
         
         push di
-        mov di, 160
+        mov di, enemy_ship_x
         
         move_enemy_loop:
         push ax
