@@ -752,6 +752,44 @@ random_ax proc
     pop bx
     ret
 endp
+
+render_enemy_ship_interrupt proc
+    mov di, 160
+    push ax
+    push cx
+    call delete_model
+
+    move_left_interrupt_loop:
+        push ax
+        mov ah, 01
+        int 16h
+        cmp ah, 50h
+        je end_render_enemy_ship_interrupt_pop_ax
+        cmp ah, 48h
+        je end_render_enemy_ship_interrupt_pop_ax
+        
+        pop ax
+        cmp di, 0
+        je end_render_enemy_ship_interrupt
+        push ax
+        call set_enemy_model_speed
+        mov cl, 9
+        mov bh, 1
+        pop ax
+        call render_model_left
+        jmp move_left_loop  
+    
+    end_render_enemy_ship_interrupt: 
+        call delete_model
+        pop cx
+        ret
+    end_render_enemy_ship_interrupt_pop_ax: 
+        call delete_model
+        pop ax
+        pop cx
+        ret
+endp
+
     
 render_game_screen proc
     push ax
@@ -797,25 +835,38 @@ render_game_screen proc
     mov di, 160
     push di
     
+
    game_loop:
-        ; aliada
         push di
         mov di, 32
         push ax
         call set_ally_model_speed
-        mov ah, 0
-        int 16h
-        cmp ah, 50h
-        je down_pressed
-        cmp ah, 48h
-        je up_pressed
         pop ax
+        mov ah, 0
+        
+        push ax
+        ;mov ah, 00
+        ;int 16h
+        ;cmp ah, 50h
+        ;je down_pressed
+        ;cmp ah, 48h
+        ;je up_pressed
+        ;pop ax
+        
         call delete_model
         mov bl, 15
         dec ax
         call render_model
+    
+        push ax    
+        call random_ax
+        call render_enemy_ship_interrupt
+        
+        
         
 
+        ; aliada
+        pop ax
         jmp game_loop
         
     up_pressed:
@@ -833,12 +884,10 @@ render_game_screen proc
         inc ax
         call render_model
         jmp game_loop
+        
     space_pressed:
         ret
     
-    ;; cx vai receber o n?mero de naves m?ximas level 1 = 10, level 2 = 15, level 3 = 20
-    ;; precisa descobrir como controlar a posi??o de v?rias naves simult?neas
-    mov cx, 10
 endp
 
 set_ally_model_speed proc
