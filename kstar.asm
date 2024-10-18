@@ -755,7 +755,6 @@ endp
 
 render_enemy_ship_interrupt proc
     mov di, 160
-    push ax
     push cx
     call delete_model
 
@@ -777,7 +776,7 @@ render_enemy_ship_interrupt proc
         mov bh, 1
         pop ax
         call render_model_left
-        jmp move_left_loop  
+        jmp move_left_interrupt_loop  
     
     end_render_enemy_ship_interrupt: 
         call delete_model
@@ -785,7 +784,6 @@ render_enemy_ship_interrupt proc
         ret
     end_render_enemy_ship_interrupt_pop_ax: 
         call delete_model
-        pop ax
         pop cx
         ret
 endp
