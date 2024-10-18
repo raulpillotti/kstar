@@ -1,4 +1,4 @@
-.model small
+model small
 
 .stack 100H  
 
@@ -794,46 +794,51 @@ render_game_screen proc
     mov ax, 100
     call render_model
     
-    game_loop:
+    mov di, 160
+    push di
+    
+   game_loop:
+        ; aliada
+        push di
+        mov di, 32
         push ax
         call set_ally_model_speed
-        ;mov ah, 01h
-        ;int 16h
-        ;cmp ah, 50h
-        ;je down_pressed
-        ;cmp ah, 48h
-        ;je up_pressed
-        ;cmp ah, 1ch
-        ;je space_pressed
-        ;push ax
+        mov ah, 0
+        int 16h
+        cmp ah, 50h
+        je down_pressed
+        cmp ah, 48h
+        je up_pressed
+        pop ax
+        call delete_model
+        mov bl, 15
+        dec ax
+        call render_model
+        
+
+        jmp game_loop
+        
+    up_pressed:
+        pop ax
+        call delete_model
+        mov bl, 15
+        dec ax
+        call render_model
+        jmp game_loop
+        
+    down_pressed:
         pop ax
         call delete_model
         mov bl, 15
         inc ax
         call render_model
         jmp game_loop
-    
-    up_pressed:
-        inc di
-        call render_model
-        
-    down_pressed:
-        ret
     space_pressed:
         ret
     
     ;; cx vai receber o n?mero de naves m?ximas level 1 = 10, level 2 = 15, level 3 = 20
     ;; precisa descobrir como controlar a posi??o de v?rias naves simult?neas
     mov cx, 10
-
-    loop_render_enemy_ships:
-        call set_enemy_model_speed
-        push cx
-        call random_ax
-        call render_enemy_ship
-        pop cx
-        loop loop_render_enemy_ships  
-    ret
 endp
 
 set_ally_model_speed proc
