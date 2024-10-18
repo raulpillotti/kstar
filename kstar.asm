@@ -98,7 +98,88 @@
     0,0,12,12,0,0,0,0,0,0,0,0,0,0,0, \
     0,0,12,12,0,0,0,0,0,0,0,0,0,0,0, \
     12,12,12,12,12,12,12,12,12,12,12,12,0,0,0,
-    
+
+    magenta_ship db    5,5,5,5,5,5,5,5,5,5,5,5,0,0,0, \
+    0,0,5,5,0,0,0,0,0,0,0,0,0,0,0, \
+    0,0,5,5,0,0,0,0,0,0,0,0,0,0,0, \
+    0,0,5,5,5,5,5,0,0,0,0,0,0,0,0, \
+    0,0,5,5,5,5,5,5,5,5,5,5,5,5,5, \
+    0,0,5,5,5,5,5,0,0,0,0,0,0,0,0, \
+    0,0,5,5,0,0,0,0,0,0,0,0,0,0,0, \
+    0,0,5,5,0,0,0,0,0,0,0,0,0,0,0, \
+    5,5,5,5,5,5,5,5,5,5,5,5,0,0,0,
+
+    ciano_ship db    3,3,3,3,3,3,3,3,3,3,3,3,0,0,0, \
+    0,0,3,3,0,0,0,0,0,0,0,0,0,0,0, \
+    0,0,3,3,0,0,0,0,0,0,0,0,0,0,0, \
+    0,0,3,3,3,3,3,0,0,0,0,0,0,0,0, \
+    0,0,3,3,3,3,3,3,3,3,3,3,3,3,3, \
+    0,0,3,3,3,3,3,0,0,0,0,0,0,0,0, \
+    0,0,3,3,0,0,0,0,0,0,0,0,0,0,0, \
+    0,0,3,3,0,0,0,0,0,0,0,0,0,0,0, \
+    3,3,3,3,3,3,3,3,3,3,3,3,0,0,0,
+
+    marrom_ship db    6,6,6,6,6,6,6,6,6,6,6,6,0,0,0, \
+    0,0,6,6,0,0,0,0,0,0,0,0,0,0,0, \
+    0,0,6,6,0,0,0,0,0,0,0,0,0,0,0, \
+    0,0,6,6,6,6,6,0,0,0,0,0,0,0,0, \
+    0,0,6,6,6,6,6,6,6,6,6,6,6,6,6, \
+    0,0,6,6,6,6,6,0,0,0,0,0,0,0,0, \
+    0,0,6,6,0,0,0,0,0,0,0,0,0,0,0, \
+    0,0,6,6,0,0,0,0,0,0,0,0,0,0,0, \
+    6,6,6,6,6,6,6,6,6,6,6,6,0,0,0,
+
+    cinza_ship db    7,7,7,7,7,7,7,7,7,7,7,7,0,0,0, \
+    0,0,7,7,0,0,0,0,0,0,0,0,0,0,0, \
+    0,0,7,7,0,0,0,0,0,0,0,0,0,0,0, \
+    0,0,7,7,7,7,7,0,0,0,0,0,0,0,0, \
+    0,0,7,7,7,7,7,7,7,7,7,7,7,7,7, \
+    0,0,7,7,7,7,7,0,0,0,0,0,0,0,0, \
+    0,0,7,7,0,0,0,0,0,0,0,0,0,0,0, \
+    0,0,7,7,0,0,0,0,0,0,0,0,0,0,0, \
+    7,7,7,7,7,7,7,7,7,7,7,7,0,0,0,
+
+    verde_ship db    2,2,2,2,2,2,2,2,2,2,2,2,0,0,0, \
+    0,0,2,2,0,0,0,0,0,0,0,0,0,0,0, \
+    0,0,2,2,0,0,0,0,0,0,0,0,0,0,0, \
+    0,0,2,2,2,2,2,0,0,0,0,0,0,0,0, \
+    0,0,2,2,2,2,2,2,2,2,2,2,2,2,2, \
+    0,0,2,2,2,2,2,0,0,0,0,0,0,0,0, \
+    0,0,2,2,0,0,0,0,0,0,0,0,0,0,0, \
+    0,0,2,2,0,0,0,0,0,0,0,0,0,0,0, \
+    2,2,2,2,2,2,2,2,2,2,2,2,0,0,0,
+
+    vermelho_ship db    4,4,4,4,4,4,4,4,4,4,4,4,0,0,0, \
+    0,0,4,4,0,0,0,0,0,0,0,0,0,0,0, \
+    0,0,4,4,0,0,0,0,0,0,0,0,0,0,0, \
+    0,0,4,4,4,4,4,0,0,0,0,0,0,0,0, \
+    0,0,4,4,4,4,4,4,4,4,4,4,4,4,4, \
+    0,0,4,4,4,4,4,0,0,0,0,0,0,0,0, \
+    0,0,4,4,0,0,0,0,0,0,0,0,0,0,0, \
+    0,0,4,4,0,0,0,0,0,0,0,0,0,0,0, \
+    4,4,4,4,4,4,4,4,4,4,4,4,0,0,0,
+
+    amarelo_ship db    0EH,0EH,0EH,0EH,0EH,0EH,0EH,0EH,0EH,0EH,0EH,0EH,0,0,0, \
+    0,0,0EH,0EH,0,0,0,0,0,0,0,0,0,0,0, \
+    0,0,0EH,0EH,0,0,0,0,0,0,0,0,0,0,0, \
+    0,0,0EH,0EH,0EH,0EH,0EH,0,0,0,0,0,0,0,0, \
+    0,0,0EH,0EH,0EH,0EH,0EH,0EH,0EH,0EH,0EH,0EH,0EH,0EH,0EH, \
+    0,0,0EH,0EH,0EH,0EH,0EH,0,0,0,0,0,0,0,0, \
+    0,0,0EH,0EH,0,0,0,0,0,0,0,0,0,0,0, \
+    0,0,0EH,0EH,0,0,0,0,0,0,0,0,0,0,0, \
+    0EH,0EH,0EH,0EH,0EH,0EH,0EH,0EH,0EH,0EH,0EH,0EH,0,0,0,
+
+    azul_ship db    1,1,1,1,1,1,1,1,1,1,1,1,0,0,0, \
+    0,0,1,1,0,0,0,0,0,0,0,0,0,0,0, \
+    0,0,1,1,0,0,0,0,0,0,0,0,0,0,0, \
+    0,0,1,1,1,1,1,0,0,0,0,0,0,0,0, \
+    0,0,1,1,1,1,1,1,1,1,1,1,1,1,1, \
+    0,0,1,1,1,1,1,0,0,0,0,0,0,0,0, \
+    0,0,1,1,0,0,0,0,0,0,0,0,0,0,0, \
+    0,0,1,1,0,0,0,0,0,0,0,0,0,0,0, \
+    1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,
+
+
     ; Definir o texto em ASCII para o setor 1
     setor1_l1 db '   _____      __                ___ ', 0
     setor1_l2 db '  / ___/___  / /_____  _____   <  / ', 0
@@ -214,13 +295,40 @@ render_model proc
  
     cmp bl, 0
     je deleted
+    
     cmp bl, 9
     je blue
+    
     cmp bl, 12
     je red
+
     cmp bl, 15
     je white
+
+    cmp bl, 1
+    je azul
+
+    cmp bl, 2
+    je verde
+
+    cmp bl, 3
+    je ciano
+
+    cmp bl, 4
+    je vermelho
     
+    cmp bl, 5
+    je magenta
+
+    cmp bl, 6
+    je marrom
+    
+    cmp bl, 7
+    je cinza
+
+    cmp bl, 0EH
+    je amarelo
+
     deleted:
         mov si, offset deleted_model
         jmp render_model_line_loop
@@ -238,7 +346,31 @@ render_model proc
     white: 
         mov si, offset white_ship
         jmp render_model_line_loop
-        
+    ciano: 
+        mov si, offset ciano_ship
+        jmp render_model_line_loop    
+    marrom: 
+        mov si, offset marrom_ship
+        jmp render_model_line_loop
+    cinza: 
+        mov si, offset cinza_ship
+        jmp render_model_line_loop
+    magenta: 
+        mov si, offset magenta_ship
+        jmp render_model_line_loop
+    verde: 
+        mov si, offset verde_ship
+        jmp render_model_line_loop
+    vermelho: 
+        mov si, offset vermelho_ship
+        jmp render_model_line_loop
+    amarelo: 
+        mov si, offset amarelo_ship
+        jmp render_model_line_loop
+    azul:
+        mov si, offset azul_ship
+        jmp render_model_line_loop
+
     ;fazer isso ship_height vezes
     render_model_line_loop:
         push cx
@@ -602,7 +734,7 @@ render_status_bar proc
     ret
 endp
 
-random_ax:
+random_ax proc
     push bx
     push dx
     
@@ -619,40 +751,41 @@ random_ax:
     pop dx
     pop bx
     ret
-
+endp
+    
 render_game_screen proc
     push ax
     xor di, di
    
-    mov bl, 15
+    mov bl, 5
     mov ax, 20
     call render_model
     
-    mov bl, 15
+    mov bl, 3
     mov ax, 40
     call render_model
     
-    mov bl, 15
+    mov bl, 6
     mov ax, 60
     call render_model
     
-    mov bl, 15
+    mov bl, 7
     mov ax, 80
     call render_model
     
-    mov bl, 15
+    mov bl, 2
     mov ax, 100
     call render_model
     
-    mov bl, 15
+    mov bl, 4
     mov ax, 120
     call render_model
     
-    mov bl, 15
+    mov bl, 0EH
     mov ax, 140
     call render_model
     
-    mov bl, 15
+    mov bl, 1
     mov ax, 160
     call render_model
     
