@@ -4,7 +4,7 @@ model small
 
 .data
     max_line_size equ 40 
-    
+
     seed dw 12345    ; Semente inicial
 
     title_l1 db '  _  __       ___   _                 ',0
@@ -15,7 +15,7 @@ model small
     title_l6 db '  | _ \  __ _  | |_   _ _   ___  | |  ',0
     title_l7 db '  |  _/ / _` | |  _| |  _| / _ \ | |  ',0
     title_l8 db '  |_|   \__,_|  \__| |_|   \___/ |_|  ',0
-                                   
+
     title_line_size equ 38
     
     button_line_size equ 11
@@ -221,6 +221,8 @@ model small
     tempo_label db 'TEMPO:', 0
     tempo_value dw 60
 
+    endereco_nave_aliada dw 100
+
     cr equ 13
     lf equ 10    
     
@@ -335,8 +337,10 @@ render_model proc
     blue:
         cmp bh, 1
         je render_blue_ship_inverted
+        
         mov si, offset blue_ship
         jmp render_model_line_loop
+        
         render_blue_ship_inverted:
             mov si, offset blue_ship_inverted
             jmp render_model_line_loop
@@ -754,45 +758,55 @@ random_ax proc
 endp
 
 render_enemy_ship_interrupt proc
-    mov di, 160
-    push cx
-    call delete_model
 
-    move_left_interrupt_loop:
-        push ax
-        mov ah, 01
-        int 16h
-        cmp ah, 50h
-        je end_render_enemy_ship_interrupt_pop_ax
-        cmp ah, 48h
-        je end_render_enemy_ship_interrupt_pop_ax
-        
-        pop ax
-        cmp di, 0
-        je end_render_enemy_ship_interrupt
-        push ax
-        call set_enemy_model_speed
-        mov cl, 9
-        mov bh, 1
-        pop ax
-        call render_model_left
-        jmp move_left_interrupt_loop  
+    mov bl, 9
+    mov ax, 100
+    mov di, 160
+    mov bh, 1
+    call render_model
     
-    end_render_enemy_ship_interrupt: 
-        call delete_model
-        pop cx
-        ret
-    end_render_enemy_ship_interrupt_pop_ax: 
-        call delete_model
-        pop cx
+
+    ; mov di, 160
+    ; push cx
+    ; call delete_model
+
+    ; ;move_left_interrupt_loop:
+    ;     push ax
+    ;     mov ah, 01h
+    ;     int 16h
+    ;     cmp ah, 50h
+    ;     je end_render_enemy_ship_interrupt_pop_ax
+    ;     cmp ah, 48h
+    ;     je end_render_enemy_ship_interrupt_pop_ax
+        
+    ;     pop ax
+    ;     cmp di, 0
+    ;     je end_render_enemy_ship_interrupt
+    ;     push ax
+    ;     call set_enemy_model_speed
+    ;     mov cl, 9
+    ;     mov bh, 1
+    ;     pop ax
+    ;     call render_model_left
+    ;     ;jmp move_left_interrupt_loop  
+    ;     jmp finaly
+        
+    ; end_render_enemy_ship_interrupt: 
+    ;     call delete_model
+    ;     pop cx
+    ;     jmp finaly
+  
+    ; end_render_enemy_ship_interrupt_pop_ax: 
+    ;     call delete_model
+    ;     pop cx
+        
+    ;finaly:
         ret
 endp
 
-    
-render_game_screen proc
-    push ax
+render_ally_ships proc
     xor di, di
-   
+    
     mov bl, 5
     mov ax, 20
     call render_model
@@ -827,62 +841,89 @@ render_game_screen proc
     
     mov di, 32
     mov bl, 15
-    mov ax, 100
-    call render_model
-    
-    mov di, 160
-    push di
-    
 
-   game_loop:
-        push di
-        mov di, 32
-        push ax
-        call set_ally_model_speed
-        pop ax
-        mov ah, 0
-        
-        
-        call delete_model
-        mov bl, 15
-        dec ax
-        call render_model
+    mov ax, [endereco_nave_aliada]
+    call render_model
+
+    ret
+endp
     
-        push ax    
-        call random_ax
-        call render_enemy_ship_interrupt
+render_game_screen proc
+    push ax
+    
+    call render_ally_ships
+
+    ;mov di, 160
+    ;push di
+    
+   game_loop:
+    
+        ; push di
+        ; mov di, 32
+        ; push ax
+        ; call set_ally_model_speed
+        ; pop ax
+        ; mov ah, 0
         
-        ;push ax
-        mov ah, 01
+        
+        ; call delete_model
+        ; mov bl, 15
+        ; dec ax
+        ; call render_model
+    
+        ; push ax    
+        ; call random_ax
+        call render_enemy_ship_interrupt
+    
+        mov ah, 00h
         int 16h
+    
         cmp ah, 50h
         je down_pressed
         cmp ah, 48h
         je up_pressed
-        ;pop ax
-        
-        
-        ; aliada
-        pop ax
+
         jmp game_loop
-        
+
     up_pressed:
+        mov di, 32
+
+        mov ax, [endereco_nave_aliada]
+        cmp ax, 15
+        je game_loop
+                
         call delete_model
         mov bl, 15
+        
         dec ax
+
+        mov [endereco_nave_aliada], ax
+        
         call render_model
+        
         jmp game_loop
         
     down_pressed:
+        mov di, 32
+
+        mov ax, [endereco_nave_aliada]
+        cmp ax, 170
+        je game_loop
+        
         call delete_model
         mov bl, 15
+
         inc ax
+
+        mov [endereco_nave_aliada], ax
+        
         call render_model
+        
         jmp game_loop
         
     space_pressed:
-        ret
-    
+
+    ret
 endp
 
 set_ally_model_speed proc
