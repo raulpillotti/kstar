@@ -753,43 +753,33 @@ random_ax proc
     ret
 endp
 
-render_enemy_ship_interrupt proc
-    mov di, 160
-    push cx
-    call delete_model
+;render_enemy_ship_interrupt proc
+ ;   push di
+ ;  mov di, 160
+ ;  push cx
+ ;  call delete_model
+ 
 
-    move_left_interrupt_loop:
-        push ax
-        mov ah, 01
-        int 16h
-        cmp ah, 50h
-        je end_render_enemy_ship_interrupt_pop_ax
-        cmp ah, 48h
-        je end_render_enemy_ship_interrupt_pop_ax
-        
-        pop ax
-        cmp di, 0
-        je end_render_enemy_ship_interrupt
-        push ax
-        call set_enemy_model_speed
-        mov cl, 9
-        mov bh, 1
-        pop ax
-        call render_model_left
-        jmp move_left_interrupt_loop  
+ ;   move_left_interrupt_loop:
+ ;      cmp di, 0
+ ;      je end_render_enemy_ship_interrupt
+ ;      push ax
+ ;      call set_enemy_model_speed
+ ;      mov cl, 9
+ ;        mov bh, 1
+  ;      pop ax
+  ;      call render_model_left
+  ;     jmp move_left_interrupt_loop  
     
-    end_render_enemy_ship_interrupt: 
-        call delete_model
-        pop cx
-        ret
-    end_render_enemy_ship_interrupt_pop_ax: 
-        call delete_model
-        pop cx
-        ret
-endp
-
+  ;  end_render_enemy_ship_interrupt: 
+  ;     call delete_model
+  ;     pop cx
+  ;     pop di
+  ;     ret
+  ;endp
     
 render_game_screen proc
+    call render_status_bar
     push ax
     xor di, di
    
@@ -830,18 +820,18 @@ render_game_screen proc
     mov ax, 100
     call render_model
     
-    mov di, 160
-    push di
-    
-
    game_loop:
+        push ax
+        mov ah, 01h
+        int 16h
+        cmp ah, 50h
+        je up_pressed
+        cmp ah, 48h
+        je down_pressed
+        
         push di
         mov di, 32
-        push ax
         call set_ally_model_speed
-        pop ax
-        mov ah, 0
-        
         
         call delete_model
         mov bl, 15
@@ -850,23 +840,38 @@ render_game_screen proc
     
         push ax    
         call random_ax
-        call render_enemy_ship_interrupt
         
-        ;push ax
-        mov ah, 01
+        push di
+        mov di, 160
+        
+        move_enemy_loop:
+        push ax
+        mov ah, 01h
         int 16h
         cmp ah, 50h
-        je down_pressed
-        cmp ah, 48h
         je up_pressed
-        ;pop ax
-        
-        
-        ; aliada
+        cmp ah, 48h
+        je down_pressed
         pop ax
+        
+        cmp di, 0
+        je ally
+        push ax
+        call set_enemy_model_speed
+        mov cl, 9
+        mov bh, 1
+        pop ax
+        call render_model_left
+        jmp move_enemy_loop  
+    
+    ally:
+        call delete_model
+        pop ax
+        pop di
         jmp game_loop
         
     up_pressed:
+        pop ax
         call delete_model
         mov bl, 15
         dec ax
@@ -874,6 +879,7 @@ render_game_screen proc
         jmp game_loop
         
     down_pressed:
+        pop ax
         call delete_model
         mov bl, 15
         inc ax
@@ -903,7 +909,7 @@ set_enemy_model_speed proc
     mov dx, 061A8h             
     call sleep
     pop cx
-    pop ax
+    pop dx
     ret
 endp
 
