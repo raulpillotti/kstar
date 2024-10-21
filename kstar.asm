@@ -4,7 +4,7 @@ model small
 
 .data
     max_line_size equ 40 
-
+       
     seed dw 12345    ; Semente inicial
 
     title_l1 db '  _  __       ___   _                 ',0
@@ -15,7 +15,7 @@ model small
     title_l6 db '  | _ \  __ _  | |_   _ _   ___  | |  ',0
     title_l7 db '  |  _/ / _` | |  _| |  _| / _ \ | |  ',0
     title_l8 db '  |_|   \__,_|  \__| |_|   \___/ |_|  ',0
-
+                                   
     title_line_size equ 38
     
     button_line_size equ 11
@@ -220,9 +220,23 @@ model small
     score_value db '00000', 0
     tempo_label db 'TEMPO:', 0
     tempo_value dw 60
+    
+    endereco_alida_x dw 100
+    
+    inimiga_x dw 100
+    inimiga_y dw 160
 
-    endereco_nave_aliada dw 100
+    endereco_bullet1_x dw 100
+    endereco_bullet1_y dw 46
 
+    endereco_bullet2_x dw 100
+    endereco_bullet2_y dw 46
+
+    endereco_bullet3_x dw 100
+    endereco_bullet3_y dw 46
+    
+    fire dw 0
+    
     cr equ 13
     lf equ 10    
     
@@ -331,6 +345,9 @@ render_model proc
     cmp bl, 0EH
     je amarelo
 
+    cmp bl, 11
+    je bullet_ship
+    
     deleted:
         mov si, offset deleted_model
         jmp render_model_line_loop
@@ -374,7 +391,10 @@ render_model proc
     azul:
         mov si, offset azul_ship
         jmp render_model_line_loop
-
+    bullet_ship:
+        mov si, offset bullet
+        jmp render_model_line_loop
+        
     ;fazer isso ship_height vezes
     render_model_line_loop:
         push cx
@@ -758,51 +778,39 @@ random_ax proc
 endp
 
 render_enemy_ship_interrupt proc
-
-    mov bl, 9
-    mov ax, 100
-    mov di, 160
-    mov bh, 1
-    call render_model
+    ; Inicializa os valores
+    mov ax, [inimiga_x]
+    mov di, [inimiga_y]
     
+    call delete_model
+    
+    mov bh, 1                      ; Alguma configura??o espec?fica do modelo (cor, etc.)
+    mov bl, 9                      ; Modelo da nave inimiga
+    
+    ; Gera um n?mero aleat?rio entre 0 e 1 para decidir se incrementa ou decrementa em X
+    call random_ax                    ; Sup?e que existe uma fun??o que retorna um n?mero aleat?rio em AX
+    and ax, 1                      ; Isola o bit menos significativo para ter 0 ou 1
+    test ax, ax                    ; Testa o resultado
+    jz decrementa_x                ; Se zero, pula para decrementar
 
-    ; mov di, 160
-    ; push cx
-    ; call delete_model
+incrementa_x:
+    ;inc [inimiga_x]                ; Incrementa a posi??o X
+    jmp atualiza_y
 
-    ; ;move_left_interrupt_loop:
-    ;     push ax
-    ;     mov ah, 01h
-    ;     int 16h
-    ;     cmp ah, 50h
-    ;     je end_render_enemy_ship_interrupt_pop_ax
-    ;     cmp ah, 48h
-    ;     je end_render_enemy_ship_interrupt_pop_ax
-        
-    ;     pop ax
-    ;     cmp di, 0
-    ;     je end_render_enemy_ship_interrupt
-    ;     push ax
-    ;     call set_enemy_model_speed
-    ;     mov cl, 9
-    ;     mov bh, 1
-    ;     pop ax
-    ;     call render_model_left
-    ;     ;jmp move_left_interrupt_loop  
-    ;     jmp finaly
-        
-    ; end_render_enemy_ship_interrupt: 
-    ;     call delete_model
-    ;     pop cx
-    ;     jmp finaly
-  
-    ; end_render_enemy_ship_interrupt_pop_ax: 
-    ;     call delete_model
-    ;     pop cx
-        
-    ;finaly:
-        ret
+decrementa_x:
+    ;dec [inimiga_x]                ; Decrementa a posi??o X
+
+atualiza_y:
+    dec [inimiga_y]                ; Incrementa a posi??o Y independentemente do resultado de X
+
+    ; Renderiza o modelo da nave inimiga
+    mov ax, 100
+    mov di, [inimiga_y]
+    call render_model              ; Chamada para a fun??o que renderiza o modelo
+
+    ret
 endp
+
 
 render_ally_ships proc
     xor di, di
@@ -841,54 +849,154 @@ render_ally_ships proc
     
     mov di, 32
     mov bl, 15
-
-    mov ax, [endereco_nave_aliada]
+    mov ax, [endereco_alida_x]
     call render_model
 
     ret
 endp
     
+    
+render_bullet_one proc
+
+    mov bl, 11
+    mov di, [endereco_bullet1_y]
+    mov ax, [endereco_bullet1_x]
+    inc di
+    mov [endereco_bullet1_y], di
+    call render_model
+    
+    ret
+endp
+
+render_bullet_two proc
+
+    mov bl, 11
+    mov di, [endereco_bullet2_y]
+    mov ax, [endereco_bullet2_x]
+    inc di
+    mov [endereco_bullet2_y], di
+    call render_model
+
+    ret
+endp
+
+render_bullet_three proc
+
+    mov bl, 11
+    mov di, [endereco_bullet3_y]
+    mov ax, [endereco_bullet3_x]
+    inc di
+    mov [endereco_bullet3_y], di
+    call render_model
+
+    ret
+endp
+
+render_render_bullet proc 
+    
+    cmp fire, 1
+    je bullet_one
+
+    cmp fire, 2
+    je bullet_two
+
+    cmp fire, 3
+    je bullet_three
+
+    ret
+    
+    bullet_one:
+        call render_bullet_one
+        ret
+
+    bullet_two:
+        call render_bullet_one
+        call render_bullet_two
+        ret
+        
+
+    bullet_three:
+        call render_bullet_one
+        call render_bullet_two
+        call render_bullet_three
+
+    ret
+endp
+
+valid_bullet proc
+
+    cmp [fire], 1
+    je att_bullet_one
+    cmp [fire], 2
+    je att_bullet_two
+    cmp [fire], 3
+    je att_bullet_three
+
+    att_bullet_one:
+        mov [endereco_bullet1_x], ax
+        ret
+
+    att_bullet_two:
+        mov [endereco_bullet2_x], ax
+        ret
+
+    att_bullet_three:
+        mov [endereco_bullet3_x], ax
+
+    ret
+endp
+
 render_game_screen proc
     push ax
     
     call render_ally_ships
+    
+    game_loop:
 
-    ;mov di, 160
-    ;push di
-    
-   game_loop:
-    
-        ; push di
-        ; mov di, 32
-        ; push ax
-        ; call set_ally_model_speed
-        ; pop ax
-        ; mov ah, 0
-        
-        
-        ; call delete_model
-        ; mov bl, 15
-        ; dec ax
-        ; call render_model
-    
-        ; push ax    
-        ; call random_ax
         call render_enemy_ship_interrupt
-    
+        
+        call render_render_bullet
+        
+        mov cx, 0
+        mov dx, 2710h   ; 1000 em hexadecimal
+        call sleep
+        
+        mov ah, 01h
+        int 16h
+        jz no_key_pressed   ; Pula para continuar o loop se nenhuma tecla foi pressionada
+
+        ; Se uma tecla foi pressionada, verifica qual foi
         mov ah, 00h
         int 16h
-    
+        
         cmp ah, 50h
         je down_pressed
         cmp ah, 48h
         je up_pressed
-
+        cmp al, 20h     ; Compara se a tecla pressionada é espaço (0x20)
+        je space_pressed
+    
+    no_key_pressed:
+        ; Loop curto de atraso pode ser adicionado aqui se necess?rio
         jmp game_loop
 
+    space_pressed:
+        mov ax, [endereco_alida_x]
+
+        call valid_bullet
+
+        cmp [fire], 3
+        je game_loop
+
+        mov ax, [fire]
+        inc ax
+        mov [fire], ax
+
+        jmp game_loop
+        
     up_pressed:
         mov di, 32
-
-        mov ax, [endereco_nave_aliada]
+        mov ax, [endereco_alida_x]
         cmp ax, 15
         je game_loop
                 
@@ -896,8 +1004,7 @@ render_game_screen proc
         mov bl, 15
         
         dec ax
-
-        mov [endereco_nave_aliada], ax
+        mov [endereco_alida_x], ax
         
         call render_model
         
@@ -905,8 +1012,7 @@ render_game_screen proc
         
     down_pressed:
         mov di, 32
-
-        mov ax, [endereco_nave_aliada]
+        mov ax, [endereco_alida_x]
         cmp ax, 170
         je game_loop
         
@@ -914,15 +1020,12 @@ render_game_screen proc
         mov bl, 15
 
         inc ax
-
-        mov [endereco_nave_aliada], ax
+        mov [endereco_alida_x], ax
         
         call render_model
         
         jmp game_loop
         
-    space_pressed:
-
     ret
 endp
 
