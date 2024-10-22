@@ -219,8 +219,10 @@ model small
     score_label db 'SCORE:', 0
     score_value db '00000', 0
     tempo_label db 'TEMPO:', 0
-    tempo_value dw 60
     
+    tempo_value dw 60 ; Contador de segundos para 60s
+    count_interno dw 0     ; contador interno para aproximadamente 1 segundo
+
     endereco_alida_x dw 100
     
     inimiga_x dw 100
@@ -694,26 +696,31 @@ render_starting_screen proc
 endp
 
 start_timer proc
-    mov tempo_value, 60  ; Define o tempo inicial para 60 segundos
 
-    timer_loop:
+    mov si, [count_interno]
+
+    ; Incrementa si para simular o passar de aproximadamente 1 segundo
+    inc si
+    mov [count_interno], si
+    cmp [count_interno], 100   ; Adapte este número baseado na velocidade de execução do loop
+    jl short continue_game   ; Se ainda não passou 1 segundo, pula para continuar o jogo
+
+    ; Se passou 1 segundo, reseta o contador e decrementa o contador de tempo total
+    mov [count_interno], 0
+
+    dec [tempo_value]
+    jz game_over   ; Se o tempo total chegou a zero, vai para game over
+    
+    ret
+
+    continue_game:
         call render_status_bar   ; Exibe o tempo atualizado na tela
-
-        ; Verifica se o tempo chegou a zero
-        cmp tempo_value, 0
-        je end_timer             ; Se for zero, termina o loop
-
-        mov cx, 000Fh
-        mov dx, 4240h
-        call sleep
-
-        ; Decrementa o tempo
-        dec tempo_value
-        jmp timer_loop
-
-    end_timer:
-        call render_game_over  ; Exibe a tela de game over
         ret
+
+    game_over:
+        call render_game_over  ; Exibe a tela de game over
+
+    ret
 endp
 
 render_status_bar proc
@@ -894,17 +901,17 @@ endp
 
 render_render_bullet proc 
     
+    cmp fire, 0
+    je finally
+
     cmp fire, 1
     je bullet_one
 
     cmp fire, 2
     je bullet_two
 
-    cmp fire, 3
-    je bullet_three
+    jmp bullet_three
 
-    ret
-    
     bullet_one:
         call render_bullet_one
         ret
@@ -919,6 +926,8 @@ render_render_bullet proc
         call render_bullet_one
         call render_bullet_two
         call render_bullet_three
+    
+    finally:
 
     ret
 endp
@@ -932,15 +941,20 @@ valid_bullet proc
     cmp [fire], 3
     je att_bullet_three
 
+    ret
+
     att_bullet_one:
+        mov ax, [endereco_alida_x]
         mov [endereco_bullet1_x], ax
         ret
 
     att_bullet_two:
+        mov ax, [endereco_alida_x]
         mov [endereco_bullet2_x], ax
         ret
 
     att_bullet_three:
+        mov ax, [endereco_alida_x]
         mov [endereco_bullet3_x], ax
 
     ret
@@ -950,8 +964,13 @@ render_game_screen proc
     push ax
     
     call render_ally_ships
-    
+
+    mov [tempo_value], 60
+    mov [count_interno], 0
+
     game_loop:
+
+        call start_timer
 
         call render_enemy_ship_interrupt
         
@@ -973,7 +992,7 @@ render_game_screen proc
         je down_pressed
         cmp ah, 48h
         je up_pressed
-        cmp al, 20h     ; Compara se a tecla pressionada é espaço (0x20)
+        cmp al, 20h     ; Compara se a tecla pressionada ? espa?o (0x20)
         je space_pressed
     
     no_key_pressed:
@@ -981,16 +1000,15 @@ render_game_screen proc
         jmp game_loop
 
     space_pressed:
-        mov ax, [endereco_alida_x]
-
-        call valid_bullet
-
-        cmp [fire], 3
-        je game_loop
 
         mov ax, [fire]
         inc ax
         mov [fire], ax
+
+        cmp [fire], 4
+        je game_loop
+
+        call valid_bullet
 
         jmp game_loop
         
@@ -1003,7 +1021,7 @@ render_game_screen proc
         call delete_model
         mov bl, 15
         
-        dec ax
+        sub ax, 2
         mov [endereco_alida_x], ax
         
         call render_model
@@ -1019,7 +1037,7 @@ render_game_screen proc
         call delete_model
         mov bl, 15
 
-        inc ax
+        add ax, 2
         mov [endereco_alida_x], ax
         
         call render_model
@@ -1173,7 +1191,9 @@ clear_screen proc
 endp
 
 render_game_over proc
-    mov bl, 04h  ; Cor azul para o texto
+    call clear_screen
+
+    mov bl, 04h
     xor dx, dx
     
     mov cx, LENGTH_GAME
