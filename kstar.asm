@@ -29,11 +29,14 @@ model small
     
     teste db 'raul'
     
+    TERRAIN_HEIGHT equ 20
+    
     ;ship db 0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,0,0,0,0,0,0,0,0,0,1,1,0,1,1,0,1,1,0,0,0,0,0,0,1,1,0,1,1,1,1,0,1,1,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,1,1,0,1,1,0,0,0,0,0,0,0,0,0,1,1,0,0,0,1,1,0,0,0,0,0,0,0,1,1,0,0,0,0,0,1,1,0,0,0
     MODEL_HEIGHT equ 9
     MODEL_WIDTH equ 15
     
     SCREEN_WIDTH equ 320
+    SCREEN_HALF_WIDTH equ 160
     SCREEN_HEIGHT equ 200
     
     ship_size_bytes equ 135
@@ -178,7 +181,30 @@ model small
     0,0,1,1,0,0,0,0,0,0,0,0,0,0,0, \
     0,0,1,1,0,0,0,0,0,0,0,0,0,0,0, \
     1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,
-
+    
+   ;15 x 15
+  terrain_1 db  6,6,6,6,6,6,6,6,6,6, \
+             6,6,6,6,6,6,6,6,6,6, \
+             6,6,6,6,6,6,6,6,6,6, \
+             6,6,6,6,6,6,6,6,6,6, \
+             6,6,6,6,6,6,6,6,6,6, \
+             6,6,6,6,6,6,6,6,6,6, \
+             6,6,6,6,6,6,6,6,6,6, \
+             6,6,6,6,6,6,6,6,6,6, \
+             6,6,6,6,6,6,6,6,6,6, \
+             6,6,6,6,6,6,6,6,6,6, \
+             6,6,6,6,6,6,6,6,6,6, \
+             6,6,6,6,6,6,6,6,6,6, \
+             6,6,6,6,6,6,6,6,6,6, \
+             6,6,6,6,6,6,6,6,6,6, \
+             6,6,6,6,6,6,6,6,6,6, \
+             6,6,6,6,6,6,6,6,6,6, \
+             6,6,6,6,6,6,6,6,6,6, \
+             6,6,6,6,6,6,6,6,6,6, \
+             6,6,6,6,6,6,6,6,6,6, \
+             6,6,6,6,6,6,6,6,6,6, \
+             6,6,6,6,6,6,6,6,6,6, \
+             6,6,6,6,6,6,6,6,6,6
 
     ; Definir o texto em ASCII para o setor 1
     setor1_l1 db '   _____      __                ___ ', 0
@@ -267,6 +293,7 @@ render_pixel_string proc
     ret
 endp
 
+;recebe tamanho em cx, coluna em di e linha em ax
 
 ;PIXELS 
 
@@ -818,6 +845,44 @@ atualiza_y:
     ret
 endp
 
+fill_bottom_20_rows_with_brown proc
+    mov ax, 0A000h
+    mov es, ax            
+    mov di, 320 * 180      
+
+    mov cx, 20             
+    mov al, 6             
+    fill_row:
+        push cx                
+        mov cx, 320           
+        rep stosb              
+        pop cx                
+        loop fill_row          
+    ret
+endp
+
+render_terrain proc
+    ;push ax
+    ;push cx
+    ;push di
+    ;xor di, di
+    ;mov cx, TERRAIN_HEIGHT
+    ;mov ax, SCREEN_HEIGHT - 20
+    ;mov si, offset terrain_1
+    ;render_terrain_1_line_loop:
+    ; push cx
+        ;mov cx, SCREEN_HALF_WIDTH
+        ;   call render_pixel_string
+        ;   inc ax
+    ;    pop cx
+   ;     loop render_terrain_1_line_loop
+        
+  ;  pop di
+ ;   pop cx    
+;    pop ax
+    call fill_bottom_20_rows_with_brown
+    ret
+endp
 
 render_ally_ships proc
     xor di, di
@@ -968,7 +1033,6 @@ valid_bullet proc
     att_bullet_three:
         mov ax, [endereco_alida_x]
         mov [endereco_bullet3_x], ax
-
     ret
 endp
 
@@ -976,12 +1040,12 @@ render_game_screen proc
     push ax
     
     call render_ally_ships
+    call render_terrain
 
     mov [tempo_value], 60
     mov [count_interno], 0
 
     game_loop:
-
         call start_timer
 
         call render_enemy_ship_interrupt
@@ -1012,7 +1076,6 @@ render_game_screen proc
         jmp game_loop
 
     space_pressed:
-
         mov ax, [fire]
         inc ax
         mov [fire], ax
