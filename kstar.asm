@@ -1027,7 +1027,7 @@ render_game_screen proc
     up_pressed:
         mov di, 32
         mov ax, [endereco_alida_x]
-        cmp ax, 15
+        cmp ax, 20
         je game_loop
                 
         call delete_model
