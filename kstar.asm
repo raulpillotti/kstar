@@ -702,8 +702,8 @@ start_timer proc
     ; Incrementa si para simular o passar de aproximadamente 1 segundo
     inc si
     mov [count_interno], si
-    cmp [count_interno], 100   ; Adapte este número baseado na velocidade de execução do loop
-    jl short continue_game   ; Se ainda não passou 1 segundo, pula para continuar o jogo
+    cmp [count_interno], 100   ; Adapte este n?mero baseado na velocidade de execu??o do loop
+    jl short continue_game   ; Se ainda n?o passou 1 segundo, pula para continuar o jogo
 
     ; Se passou 1 segundo, reseta o contador e decrementa o contador de tempo total
     mov [count_interno], 0
@@ -864,39 +864,51 @@ endp
     
     
 render_bullet_one proc
-
     mov bl, 11
     mov di, [endereco_bullet1_y]
     mov ax, [endereco_bullet1_x]
     inc di
+    cmp di, SCREEN_WIDTH - MODEL_WIDTH
+    je delete_one
     mov [endereco_bullet1_y], di
     call render_model
+    ret
     
+    delete_one:
+    call delete_model
     ret
 endp
 
 render_bullet_two proc
-
     mov bl, 11
     mov di, [endereco_bullet2_y]
     mov ax, [endereco_bullet2_x]
     inc di
+    cmp di, SCREEN_WIDTH - MODEL_WIDTH
+    je delete_two
     mov [endereco_bullet2_y], di
     call render_model
-
     ret
+    
+    delete_two:
+        call delete_model
+        ret
 endp
 
 render_bullet_three proc
-
     mov bl, 11
     mov di, [endereco_bullet3_y]
     mov ax, [endereco_bullet3_x]
     inc di
+    cmp di, SCREEN_WIDTH - MODEL_WIDTH
+    je delete_three
     mov [endereco_bullet3_y], di
     call render_model
-
     ret
+    
+    delete_three:
+        call delete_model
+        ret
 endp
 
 render_render_bullet proc 
