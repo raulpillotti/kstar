@@ -182,29 +182,110 @@ model small
     0,0,1,1,0,0,0,0,0,0,0,0,0,0,0, \
     1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,
     
-   ;15 x 15
-  terrain_1 db  6,6,6,6,6,6,6,6,6,6, \
-             6,6,6,6,6,6,6,6,6,6, \
-             6,6,6,6,6,6,6,6,6,6, \
-             6,6,6,6,6,6,6,6,6,6, \
-             6,6,6,6,6,6,6,6,6,6, \
-             6,6,6,6,6,6,6,6,6,6, \
-             6,6,6,6,6,6,6,6,6,6, \
-             6,6,6,6,6,6,6,6,6,6, \
-             6,6,6,6,6,6,6,6,6,6, \
-             6,6,6,6,6,6,6,6,6,6, \
-             6,6,6,6,6,6,6,6,6,6, \
-             6,6,6,6,6,6,6,6,6,6, \
-             6,6,6,6,6,6,6,6,6,6, \
-             6,6,6,6,6,6,6,6,6,6, \
-             6,6,6,6,6,6,6,6,6,6, \
-             6,6,6,6,6,6,6,6,6,6, \
-             6,6,6,6,6,6,6,6,6,6, \
-             6,6,6,6,6,6,6,6,6,6, \
-             6,6,6,6,6,6,6,6,6,6, \
-             6,6,6,6,6,6,6,6,6,6, \
-             6,6,6,6,6,6,6,6,6,6, \
-             6,6,6,6,6,6,6,6,6,6
+    
+terrain_1 db  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+              0, 0, 0, 6, 0, 0, 0, 0, 0, 0, \
+              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+              0, 0, 0, 6, 6, 0, 0, 0, 0, 0, \
+              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+              0, 0, 0, 0, 6, 0, 0, 0, 0, 0, \
+              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+              0, 0, 0, 6, 6, 0, 0, 0, 0, 0, \
+              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+              0, 0, 0, 6, 6, 6, 0, 0, 0, 0, \
+              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+              0, 0, 0, 0, 6, 0, 0, 0, 0, 0, \
+
+
+terrain_2 db  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+              0, 0, 0, 6, 6, 0, 0, 0, 0, 0, \
+              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+              0, 0, 6, 6, 6, 6, 0, 0, 0, 0, \
+              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+              0, 0, 0, 0, 6, 6, 0, 0, 0, 0, \
+              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+              0, 0, 6, 6, 6, 6, 0, 0, 0, 0, \
+              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+              0, 0, 6, 6, 6, 6, 6, 0, 0, 0, \
+              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+              0, 0, 0, 6, 6, 0, 0, 0, 0, 0, \
+
+terrain_3 db  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+              0, 0, 6, 6, 6, 6, 0, 0, 0, 0, \
+              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+              0, 6, 6, 6, 6, 6, 6, 0, 0, 0, \
+              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+              0, 0, 0, 6, 6, 6, 6, 0, 0, 0, \
+              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+              0, 6, 6, 6, 6, 6, 6, 0, 0, 0, \
+              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+              0, 6, 6, 6, 6, 6, 6, 0, 0, 0, \
+              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+              0, 0, 6, 6, 6, 6, 0, 0, 0, 0, \
+
+terrain_4 db  11, 11, 11, 11, 11, 11, 11, 11, 11, 11, \
+              11, 6, 6, 6, 6, 6, 6, 11, 11, 11, \
+              11, 11, 11, 11, 11, 11, 11, 11, 11, 11, \
+              6, 6, 6, 6, 6, 6, 6, 6, 11, 11, \
+              11, 11, 11, 11, 11, 11, 11, 11, 11, 11, \
+              11, 11, 11, 11, 11, 11, 11, 11, 11, 11, \
+              11, 11, 11, 11, 11, 11, 11, 11, 11, 11, \
+              11, 11, 6, 6, 6, 6, 6, 6, 11, 11, \
+              11, 11, 11, 11, 11, 11, 11, 11, 11, 11, \
+              11, 11, 11, 11, 11, 11, 11, 11, 11, 11, \
+              11, 11, 11, 11, 11, 11, 11, 11, 11, 11, \
+              6, 6, 6, 6, 6, 6, 6, 6, 11, 11, \
+              11, 11, 11, 11, 11, 11, 11, 11, 11, 11, \
+              6, 6, 6, 6, 6, 6, 6, 6, 6, 11, \
+              11, 11, 11, 11, 11, 11, 11, 11, 11, 11, \
+              11, 6, 6, 6, 6, 6, 6, 11, 11, 11, \
+
+              terrain_5 db  11, 11, 11, 11, 11, 11, 11, 11, 11, 11, \
+              6, 6, 6, 6, 6, 6, 6, 6, 11, 11, \
+              11, 11, 11, 11, 11, 11, 11, 11, 11, 6, \
+              6, 6, 6, 6, 6, 6, 6, 6, 6, 11, \
+              11, 11, 11, 11, 11, 11, 11, 11, 11, 11, \
+              11, 11, 11, 11, 11, 11, 11, 11, 11, 11, \
+              11, 11, 11, 11, 11, 11, 11, 11, 11, 11, \
+              6, 6, 6, 6, 6, 6, 6, 6, 6, 6, \
+              11, 11, 11, 11, 11, 11, 11, 11, 11, 11, \
+              11, 11, 11, 11, 11, 11, 11, 11, 11, 11, \
+              11, 11, 11, 11, 11, 11, 11, 11, 11, 6, \
+              6, 6, 6, 6, 6, 6, 6, 6, 6, 11, \
+              11, 11, 11, 11, 11, 11, 11, 11, 11, 6, \
+              6, 6, 6, 6, 6, 6, 6, 6, 6, 11, \
+              11, 11, 11, 11, 11, 11, 11, 11, 11, 11, \
+              6, 6, 6, 6, 6, 6, 6, 6, 11, 11, \
+              
+              terrain_6 db  11, 11, 11, 11, 11, 11, 11, 11, 11, 6, \
+              6, 6, 6, 6, 6, 6, 6, 6, 6, 11, \
+              11, 11, 11, 11, 11, 11, 11, 11, 6, 6, \
+              6, 6, 6, 6, 6, 6, 6, 6, 6, 6, \
+              11, 11, 11, 11, 11, 11, 11, 11, 11, 11, \
+              11, 11, 11, 11, 11, 11, 11, 11, 11, 11, \
+              11, 11, 11, 11, 11, 11, 11, 11, 11, 6, \
+              6, 6, 6, 6, 6, 6, 6, 6, 6, 6, \
+              6, 11, 11, 11, 11, 11, 11, 11, 11, 11, \
+              11, 11, 11, 11, 11, 11, 11, 11, 11, 11, \
+              11, 11, 11, 11, 11, 11, 11, 11, 6, 6, \
+              6, 6, 6, 6, 6, 6, 6, 6, 6, 6, \
+              11, 11, 11, 11, 11, 11, 11, 11, 6, 6, \
+              6, 6, 6, 6, 6, 6, 6, 6, 6, 6, \
+              11, 11, 11, 11, 11, 11, 11, 11, 11, 6, \
+              6, 6, 6, 6, 6, 6, 6, 6, 6, 11, \
+
 
     ; Definir o texto em ASCII para o setor 1
     setor1_l1 db '   _____      __                ___ ', 0
@@ -862,25 +943,111 @@ fill_bottom_20_rows_with_brown proc
 endp
 
 render_terrain proc
-    ;push ax
-    ;push cx
-    ;push di
-    ;xor di, di
-    ;mov cx, TERRAIN_HEIGHT
-    ;mov ax, SCREEN_HEIGHT - 20
-    ;mov si, offset terrain_1
-    ;render_terrain_1_line_loop:
-    ; push cx
-        ;mov cx, SCREEN_HALF_WIDTH
-        ;   call render_pixel_string
-        ;   inc ax
-    ;    pop cx
-   ;     loop render_terrain_1_line_loop
-        
-  ;  pop di
- ;   pop cx    
-;    pop ax
     call fill_bottom_20_rows_with_brown
+    push ax
+    push cx
+    push di
+    xor di, di
+    mov cx, TERRAIN_HEIGHT
+   
+    
+    mov ax, SCREEN_HEIGHT - 20
+    mov cx, 10
+
+    
+    
+    push cx
+    mov cx, SCREEN_HALF_WIDTH
+    mov si, offset terrain_1
+    call render_pixel_string
+    inc ax
+    pop cx
+    
+    push cx
+    mov cx, SCREEN_HALF_WIDTH
+    mov si, offset terrain_2
+    call render_pixel_string
+    inc ax
+    pop cx
+    
+    push cx
+    mov cx, SCREEN_HALF_WIDTH
+    mov si, offset terrain_3
+    call render_pixel_string
+    inc ax
+    pop cx
+    
+    push cx
+    mov cx, SCREEN_HALF_WIDTH
+    mov si, offset terrain_4
+    call render_pixel_string
+    inc ax
+    pop cx
+    
+    push cx
+    mov cx, SCREEN_HALF_WIDTH
+    mov si, offset terrain_5
+    call render_pixel_string
+    inc ax
+    pop cx
+    
+    push cx
+    mov cx, SCREEN_HALF_WIDTH
+    mov si, offset terrain_6
+    call render_pixel_string
+    inc ax
+    pop cx
+    
+    ;;;
+    mov di, SCREEN_WIDTH / 2
+    mov ax, SCREEN_HEIGHT - 20 
+    mov cx, 10
+    
+push cx
+    mov cx, SCREEN_HALF_WIDTH
+    mov si, offset terrain_1
+    call render_pixel_string
+    inc ax
+    pop cx
+    
+    push cx
+    mov cx, SCREEN_HALF_WIDTH
+    mov si, offset terrain_2
+    call render_pixel_string
+    inc ax
+    pop cx
+    
+    push cx
+    mov cx, SCREEN_HALF_WIDTH
+    mov si, offset terrain_3
+    call render_pixel_string
+    inc ax
+    pop cx
+    
+    push cx
+    mov cx, SCREEN_HALF_WIDTH
+    mov si, offset terrain_4
+    call render_pixel_string
+    inc ax
+    pop cx
+    
+    push cx
+    mov cx, SCREEN_HALF_WIDTH
+    mov si, offset terrain_5
+    call render_pixel_string
+    inc ax
+    pop cx
+    
+    push cx
+    mov cx, SCREEN_HALF_WIDTH
+    mov si, offset terrain_6
+    call render_pixel_string
+    inc ax
+    pop cx
+
+    pop di
+    pop cx    
+    pop ax
     ret
 endp
 
@@ -1047,7 +1214,7 @@ render_game_screen proc
 
     game_loop:
         call start_timer
-
+        
         call render_enemy_ship_interrupt
         
         call render_render_bullet
