@@ -346,6 +346,8 @@ terrain_4 db  11, 11, 11, 11, 11, 11, 11, 11, 11, 11, \
     
     fire dw 0
     
+    game_stage dw 0
+    
     cr equ 13
     lf equ 10    
     
@@ -803,8 +805,32 @@ render_starting_screen proc
     ret
 endp
 
-start_timer proc
+game_flow proc
+    inc [game_stage]
+    cmp [game_stage], 1
+    je stage_2  
+    cmp [game_stage], 2
+    je stage_3
+    cmp [game_stage], 3
+    je game_over   
 
+    stage_2:
+        call clear_screen
+        call render_setor_2
+        call render_game_screen
+
+    stage_3:
+        call clear_screen
+        call render_setor_3
+        call render_game_screen
+
+    game_over:
+        call clear_screen
+        call render_game_over
+    ret
+endp
+
+start_timer proc
     mov si, [count_interno]
 
     ; Incrementa si para simular o passar de aproximadamente 1 segundo
@@ -817,7 +843,7 @@ start_timer proc
     mov [count_interno], 0
 
     dec [tempo_value]
-    jz game_over   ; Se o tempo total chegou a zero, vai para game over
+    jz timer_end   ; Se o tempo total chegou a zero, vai para game over
     
     ret
 
@@ -825,9 +851,9 @@ start_timer proc
         call render_status_bar   ; Exibe o tempo atualizado na tela
         ret
 
-    game_over:
-        call render_game_over  ; Exibe a tela de game over
-
+    timer_end:
+        call game_flow
+        
     ret
 endp
 
@@ -863,6 +889,8 @@ render_status_bar proc
     mov bl, 02h  ; Cor verde
     mov cx, 2          ; Tamanho do valor do tempo (2 d?gitos)
     mov dl, 37         ; Coluna 37 (ap?s 'TEMPO:')
+    
+
     mov si, offset tempo_value
     call render_string
 
@@ -1209,7 +1237,7 @@ render_game_screen proc
     call render_ally_ships
     call render_terrain
 
-    mov [tempo_value], 60
+    mov [tempo_value], 5
     mov [count_interno], 0
 
     game_loop:
@@ -1506,7 +1534,7 @@ start:
     je quit
     xor bx, bx
     
-    ;call render_setor_1
+    call render_setor_1
     call render_game_screen
     
     ;game_loop:
