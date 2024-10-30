@@ -330,6 +330,7 @@ terrain_4 db  11, 11, 11, 11, 11, 11, 11, 11, 11, 11, \
     tempo_value dw 60 ; Contador de segundos para 60s
     tempo_value_char1 db ?
     tempo_value_char2 db ?
+    tempo_value_string db ?,?
     count_interno dw 0     ; contador interno para aproximadamente 1 segundo
 
     endereco_alida_x dw 100
@@ -859,6 +860,39 @@ start_timer proc
     ret
 endp
 
+;; cx = tamanho, bx = string buffer; ax = n?mero
+copy_uint16_to_string_buffer proc
+    push ax      ; Salvar registradores utilizados na proc
+    push bx
+    push cx
+    push dx
+    
+    add bx, cx
+    dec bx
+    
+    loop_copy_to_buffer:
+        push cx
+        push bx
+
+        mov bx, 10              
+        xor dx, dx              
+        div bx                  
+        add dl, '0'
+        pop bx
+        mov [bx], dl
+
+        dec bx
+        pop cx
+        loop loop_copy_to_buffer
+        
+    pop dx       ; Restaurar registradores utilizados na proc
+    pop cx
+    pop bx
+    pop ax
+    ret 
+endp
+
+
 render_status_bar proc
     ; Desenha a barra de status no topo da tela
     push ax
@@ -886,33 +920,25 @@ render_status_bar proc
     mov dl, 30         ; Coluna 30 (alinhado ? direita)
     mov si, offset tempo_label
     call render_string
-
+    
+    mov cx, 2
+    mov bx, offset tempo_value_string
     mov ax, [tempo_value] 
-    mov bx, 10              
-    xor dx, dx              
-    div bx                  
-    add dl, '0'            
-    mov [tempo_value_char2], dl  
+    call copy_uint16_to_string_buffer
     
-    mov ax, [tempo_value]   
-    mov bx, 10              
-    xor dx, dx               
-    div bx                   
-    add al, '0'             
-    mov [tempo_value_char1], al  
-    
-    mov cx, 1
+    ;;;;;;;;;;;;;;;;;;;;;;
+    mov cx, 2
     mov bl, 02h
     mov dl, 36              
-    mov si, offset tempo_value_char1
+    mov si, offset tempo_value_string
     call render_string
-
+    pop cx
     
-    mov cx, 1
-    mov bl, 02h
-    mov dl, 37               
-    mov si, offset tempo_value_char2
-    call render_string
+    ;mov cx, 1
+    ;mov bl, 02h
+    ;mov dl, 37               
+    ;mov si, offset tempo_value_char2
+    ;call render_string
 
     ; Restaurar registradores
     pop cx
