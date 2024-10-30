@@ -4,11 +4,8 @@ model small
 
 .data
     max_line_size equ 40 
-    
+       
     seed dw 12345    ; Semente inicial
-    
-    enemy_ship_x dw 160
-    ally_ship_y dw 32
 
     title_l1 db '  _  __       ___   _                 ',0
     title_l2 db ' | |/ / ___  / __| | |_   __ _   _ _  ',0
@@ -32,11 +29,14 @@ model small
     
     teste db 'raul'
     
+    TERRAIN_HEIGHT equ 20
+    
     ;ship db 0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,0,0,0,0,0,0,0,0,0,1,1,0,1,1,0,1,1,0,0,0,0,0,0,1,1,0,1,1,1,1,0,1,1,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,1,1,0,1,1,0,0,0,0,0,0,0,0,0,1,1,0,0,0,1,1,0,0,0,0,0,0,0,1,1,0,0,0,0,0,1,1,0,0,0
     MODEL_HEIGHT equ 9
     MODEL_WIDTH equ 15
     
     SCREEN_WIDTH equ 320
+    SCREEN_HALF_WIDTH equ 160
     SCREEN_HEIGHT equ 200
     
     ship_size_bytes equ 135
@@ -181,6 +181,110 @@ model small
     0,0,1,1,0,0,0,0,0,0,0,0,0,0,0, \
     0,0,1,1,0,0,0,0,0,0,0,0,0,0,0, \
     1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,
+    
+    
+terrain_1 db  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+              0, 0, 0, 6, 0, 0, 0, 0, 0, 0, \
+              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+              0, 0, 0, 6, 6, 0, 0, 0, 0, 0, \
+              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+              0, 0, 0, 0, 6, 0, 0, 0, 0, 0, \
+              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+              0, 0, 0, 6, 6, 0, 0, 0, 0, 0, \
+              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+              0, 0, 0, 6, 6, 6, 0, 0, 0, 0, \
+              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+              0, 0, 0, 0, 6, 0, 0, 0, 0, 0, \
+
+
+terrain_2 db  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+              0, 0, 0, 6, 6, 0, 0, 0, 0, 0, \
+              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+              0, 0, 6, 6, 6, 6, 0, 0, 0, 0, \
+              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+              0, 0, 0, 0, 6, 6, 0, 0, 0, 0, \
+              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+              0, 0, 6, 6, 6, 6, 0, 0, 0, 0, \
+              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+              0, 0, 6, 6, 6, 6, 6, 0, 0, 0, \
+              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+              0, 0, 0, 6, 6, 0, 0, 0, 0, 0, \
+
+terrain_3 db  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+              0, 0, 6, 6, 6, 6, 0, 0, 0, 0, \
+              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+              0, 6, 6, 6, 6, 6, 6, 0, 0, 0, \
+              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+              0, 0, 0, 6, 6, 6, 6, 0, 0, 0, \
+              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+              0, 6, 6, 6, 6, 6, 6, 0, 0, 0, \
+              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+              0, 6, 6, 6, 6, 6, 6, 0, 0, 0, \
+              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+              0, 0, 6, 6, 6, 6, 0, 0, 0, 0, \
+
+terrain_4 db  11, 11, 11, 11, 11, 11, 11, 11, 11, 11, \
+              11, 6, 6, 6, 6, 6, 6, 11, 11, 11, \
+              11, 11, 11, 11, 11, 11, 11, 11, 11, 11, \
+              6, 6, 6, 6, 6, 6, 6, 6, 11, 11, \
+              11, 11, 11, 11, 11, 11, 11, 11, 11, 11, \
+              11, 11, 11, 11, 11, 11, 11, 11, 11, 11, \
+              11, 11, 11, 11, 11, 11, 11, 11, 11, 11, \
+              11, 11, 6, 6, 6, 6, 6, 6, 11, 11, \
+              11, 11, 11, 11, 11, 11, 11, 11, 11, 11, \
+              11, 11, 11, 11, 11, 11, 11, 11, 11, 11, \
+              11, 11, 11, 11, 11, 11, 11, 11, 11, 11, \
+              6, 6, 6, 6, 6, 6, 6, 6, 11, 11, \
+              11, 11, 11, 11, 11, 11, 11, 11, 11, 11, \
+              6, 6, 6, 6, 6, 6, 6, 6, 6, 11, \
+              11, 11, 11, 11, 11, 11, 11, 11, 11, 11, \
+              11, 6, 6, 6, 6, 6, 6, 11, 11, 11, \
+
+              terrain_5 db  11, 11, 11, 11, 11, 11, 11, 11, 11, 11, \
+              6, 6, 6, 6, 6, 6, 6, 6, 11, 11, \
+              11, 11, 11, 11, 11, 11, 11, 11, 11, 6, \
+              6, 6, 6, 6, 6, 6, 6, 6, 6, 11, \
+              11, 11, 11, 11, 11, 11, 11, 11, 11, 11, \
+              11, 11, 11, 11, 11, 11, 11, 11, 11, 11, \
+              11, 11, 11, 11, 11, 11, 11, 11, 11, 11, \
+              6, 6, 6, 6, 6, 6, 6, 6, 6, 6, \
+              11, 11, 11, 11, 11, 11, 11, 11, 11, 11, \
+              11, 11, 11, 11, 11, 11, 11, 11, 11, 11, \
+              11, 11, 11, 11, 11, 11, 11, 11, 11, 6, \
+              6, 6, 6, 6, 6, 6, 6, 6, 6, 11, \
+              11, 11, 11, 11, 11, 11, 11, 11, 11, 6, \
+              6, 6, 6, 6, 6, 6, 6, 6, 6, 11, \
+              11, 11, 11, 11, 11, 11, 11, 11, 11, 11, \
+              6, 6, 6, 6, 6, 6, 6, 6, 11, 11, \
+              
+              terrain_6 db  11, 11, 11, 11, 11, 11, 11, 11, 11, 6, \
+              6, 6, 6, 6, 6, 6, 6, 6, 6, 11, \
+              11, 11, 11, 11, 11, 11, 11, 11, 6, 6, \
+              6, 6, 6, 6, 6, 6, 6, 6, 6, 6, \
+              11, 11, 11, 11, 11, 11, 11, 11, 11, 11, \
+              11, 11, 11, 11, 11, 11, 11, 11, 11, 11, \
+              11, 11, 11, 11, 11, 11, 11, 11, 11, 6, \
+              6, 6, 6, 6, 6, 6, 6, 6, 6, 6, \
+              6, 11, 11, 11, 11, 11, 11, 11, 11, 11, \
+              11, 11, 11, 11, 11, 11, 11, 11, 11, 11, \
+              11, 11, 11, 11, 11, 11, 11, 11, 6, 6, \
+              6, 6, 6, 6, 6, 6, 6, 6, 6, 6, \
+              11, 11, 11, 11, 11, 11, 11, 11, 6, 6, \
+              6, 6, 6, 6, 6, 6, 6, 6, 6, 6, \
+              11, 11, 11, 11, 11, 11, 11, 11, 11, 6, \
+              6, 6, 6, 6, 6, 6, 6, 6, 6, 11, \
 
 
     ; Definir o texto em ASCII para o setor 1
@@ -222,8 +326,31 @@ model small
     score_label db 'SCORE:', 0
     score_value db '00000', 0
     tempo_label db 'TEMPO:', 0
-    tempo_value dw 60
+    
+    tempo_value dw 60 ; Contador de segundos para 60s
+    tempo_value_char1 db ?
+    tempo_value_char2 db ?
+    tempo_value_string db ?,?
+    count_interno dw 0     ; contador interno para aproximadamente 1 segundo
 
+    endereco_alida_x dw 100
+    
+    inimiga_x dw 100
+    inimiga_y dw 160
+
+    endereco_bullet1_x dw 100
+    endereco_bullet1_y dw 46
+
+    endereco_bullet2_x dw 100
+    endereco_bullet2_y dw 46
+
+    endereco_bullet3_x dw 100
+    endereco_bullet3_y dw 46
+    
+    fire dw 0
+    
+    game_stage dw 0
+    
     cr equ 13
     lf equ 10    
     
@@ -252,6 +379,7 @@ render_pixel_string proc
     ret
 endp
 
+;recebe tamanho em cx, coluna em di e linha em ax
 
 ;PIXELS 
 
@@ -332,14 +460,19 @@ render_model proc
     cmp bl, 0EH
     je amarelo
 
+    cmp bl, 11
+    je bullet_ship
+    
     deleted:
         mov si, offset deleted_model
         jmp render_model_line_loop
     blue:
         cmp bh, 1
         je render_blue_ship_inverted
+        
         mov si, offset blue_ship
         jmp render_model_line_loop
+        
         render_blue_ship_inverted:
             mov si, offset blue_ship_inverted
             jmp render_model_line_loop
@@ -373,7 +506,10 @@ render_model proc
     azul:
         mov si, offset azul_ship
         jmp render_model_line_loop
-
+    bullet_ship:
+        mov si, offset bullet
+        jmp render_model_line_loop
+        
     ;fazer isso ship_height vezes
     render_model_line_loop:
         push cx
@@ -672,28 +808,90 @@ render_starting_screen proc
     ret
 endp
 
-start_timer proc
-    mov tempo_value, 60  ; Define o tempo inicial para 60 segundos
+game_flow proc
+    inc [game_stage]
+    cmp [game_stage], 1
+    je stage_2  
+    cmp [game_stage], 2
+    je stage_3
+    cmp [game_stage], 3
+    je game_over   
 
-    timer_loop:
-        call render_status_bar   ; Exibe o tempo atualizado na tela
+    stage_2:
+        call clear_screen
+        call render_setor_2
+        call render_game_screen
 
-        ; Verifica se o tempo chegou a zero
-        cmp tempo_value, 0
-        je end_timer             ; Se for zero, termina o loop
+    stage_3:
+        call clear_screen
+        call render_setor_3
+        call render_game_screen
 
-        mov cx, 000Fh
-        mov dx, 4240h
-        call sleep
-
-        ; Decrementa o tempo
-        dec tempo_value
-        jmp timer_loop
-
-    end_timer:
-        call render_game_over  ; Exibe a tela de game over
-        ret
+    game_over:
+        call clear_screen
+        call render_game_over
+    ret
 endp
+
+start_timer proc
+    mov si, [count_interno]
+
+    ; Incrementa si para simular o passar de aproximadamente 1 segundo
+    inc si
+    mov [count_interno], si
+    cmp [count_interno], 100   ; Adapte este n?mero baseado na velocidade de execu??o do loop
+    jl short continue_game   ; Se ainda n?o passou 1 segundo, pula para continuar o jogo
+
+    ; Se passou 1 segundo, reseta o contador e decrementa o contador de tempo total
+    mov [count_interno], 0
+
+    dec [tempo_value]
+    jz timer_end   ; Se o tempo total chegou a zero, vai para game over
+    
+    ret
+
+    continue_game:
+        call render_status_bar   ; Exibe o tempo atualizado na tela
+        ret
+
+    timer_end:
+        call game_flow
+        
+    ret
+endp
+
+;; cx = tamanho, bx = string buffer; ax = n?mero
+copy_uint16_to_string_buffer proc
+    push ax      ; Salvar registradores utilizados na proc
+    push bx
+    push cx
+    push dx
+    
+    add bx, cx
+    dec bx
+    
+    loop_copy_to_buffer:
+        push cx
+        push bx
+
+        mov bx, 10              
+        xor dx, dx              
+        div bx                  
+        add dl, '0'
+        pop bx
+        mov [bx], dl
+
+        dec bx
+        pop cx
+        loop loop_copy_to_buffer
+        
+    pop dx       ; Restaurar registradores utilizados na proc
+    pop cx
+    pop bx
+    pop ax
+    ret 
+endp
+
 
 render_status_bar proc
     ; Desenha a barra de status no topo da tela
@@ -722,13 +920,25 @@ render_status_bar proc
     mov dl, 30         ; Coluna 30 (alinhado ? direita)
     mov si, offset tempo_label
     call render_string
-
-    ; Renderizar o valor do tempo restante na posi??o (linha 0, coluna 37)
-    mov bl, 02h  ; Cor verde
-    mov cx, 2          ; Tamanho do valor do tempo (2 d?gitos)
-    mov dl, 37         ; Coluna 37 (ap?s 'TEMPO:')
-    mov si, offset tempo_value
+    
+    mov cx, 2
+    mov bx, offset tempo_value_string
+    mov ax, [tempo_value] 
+    call copy_uint16_to_string_buffer
+    
+    ;;;;;;;;;;;;;;;;;;;;;;
+    mov cx, 2
+    mov bl, 02h
+    mov dl, 36              
+    mov si, offset tempo_value_string
     call render_string
+    pop cx
+    
+    ;mov cx, 1
+    ;mov bl, 02h
+    ;mov dl, 37               
+    ;mov si, offset tempo_value_char2
+    ;call render_string
 
     ; Restaurar registradores
     pop cx
@@ -756,36 +966,168 @@ random_ax proc
     ret
 endp
 
-;render_enemy_ship_interrupt proc
- ;   push di
- ;  mov di, 160
- ;  push cx
- ;  call delete_model
- 
+render_enemy_ship_interrupt proc
+    ; Inicializa os valores
+    mov ax, [inimiga_x]
+    mov di, [inimiga_y]
+    
+    call delete_model
+    
+    mov bh, 1                      ; Alguma configura??o espec?fica do modelo (cor, etc.)
+    mov bl, 9                      ; Modelo da nave inimiga
+    
+    ; Gera um n?mero aleat?rio entre 0 e 1 para decidir se incrementa ou decrementa em X
+    call random_ax                    ; Sup?e que existe uma fun??o que retorna um n?mero aleat?rio em AX
+    and ax, 1                      ; Isola o bit menos significativo para ter 0 ou 1
+    test ax, ax                    ; Testa o resultado
+    jz decrementa_x                ; Se zero, pula para decrementar
 
- ;   move_left_interrupt_loop:
- ;      cmp di, 0
- ;      je end_render_enemy_ship_interrupt
- ;      push ax
- ;      call set_enemy_model_speed
- ;      mov cl, 9
- ;        mov bh, 1
-  ;      pop ax
-  ;      call render_model_left
-  ;     jmp move_left_interrupt_loop  
-    
-  ;  end_render_enemy_ship_interrupt: 
-  ;     call delete_model
-  ;     pop cx
-  ;     pop di
-  ;     ret
-  ;endp
-    
-render_game_screen proc
-    call render_status_bar
+incrementa_x:
+    ;inc [inimiga_x]                ; Incrementa a posi??o X
+    jmp atualiza_y
+
+decrementa_x:
+    ;dec [inimiga_x]                ; Decrementa a posi??o X
+
+atualiza_y:
+    dec [inimiga_y]                ; Incrementa a posi??o Y independentemente do resultado de X
+
+    ; Renderiza o modelo da nave inimiga
+    mov ax, 100
+    mov di, [inimiga_y]
+    call render_model              ; Chamada para a fun??o que renderiza o modelo
+
+    ret
+endp
+
+fill_bottom_20_rows_with_brown proc
+    mov ax, 0A000h
+    mov es, ax            
+    mov di, 320 * 180      
+
+    mov cx, 20             
+    mov al, 6             
+    fill_row:
+        push cx                
+        mov cx, 320           
+        rep stosb              
+        pop cx                
+        loop fill_row          
+    ret
+endp
+
+render_terrain proc
+    call fill_bottom_20_rows_with_brown
     push ax
+    push cx
+    push di
     xor di, di
+    mov cx, TERRAIN_HEIGHT
    
+    
+    mov ax, SCREEN_HEIGHT - 20
+    mov cx, 10
+
+    
+    
+    push cx
+    mov cx, SCREEN_HALF_WIDTH
+    mov si, offset terrain_1
+    call render_pixel_string
+    inc ax
+    pop cx
+    
+    push cx
+    mov cx, SCREEN_HALF_WIDTH
+    mov si, offset terrain_2
+    call render_pixel_string
+    inc ax
+    pop cx
+    
+    push cx
+    mov cx, SCREEN_HALF_WIDTH
+    mov si, offset terrain_3
+    call render_pixel_string
+    inc ax
+    pop cx
+    
+    push cx
+    mov cx, SCREEN_HALF_WIDTH
+    mov si, offset terrain_4
+    call render_pixel_string
+    inc ax
+    pop cx
+    
+    push cx
+    mov cx, SCREEN_HALF_WIDTH
+    mov si, offset terrain_5
+    call render_pixel_string
+    inc ax
+    pop cx
+    
+    push cx
+    mov cx, SCREEN_HALF_WIDTH
+    mov si, offset terrain_6
+    call render_pixel_string
+    inc ax
+    pop cx
+    
+    ;;;
+    mov di, SCREEN_WIDTH / 2
+    mov ax, SCREEN_HEIGHT - 20 
+    mov cx, 10
+    
+push cx
+    mov cx, SCREEN_HALF_WIDTH
+    mov si, offset terrain_1
+    call render_pixel_string
+    inc ax
+    pop cx
+    
+    push cx
+    mov cx, SCREEN_HALF_WIDTH
+    mov si, offset terrain_2
+    call render_pixel_string
+    inc ax
+    pop cx
+    
+    push cx
+    mov cx, SCREEN_HALF_WIDTH
+    mov si, offset terrain_3
+    call render_pixel_string
+    inc ax
+    pop cx
+    
+    push cx
+    mov cx, SCREEN_HALF_WIDTH
+    mov si, offset terrain_4
+    call render_pixel_string
+    inc ax
+    pop cx
+    
+    push cx
+    mov cx, SCREEN_HALF_WIDTH
+    mov si, offset terrain_5
+    call render_pixel_string
+    inc ax
+    pop cx
+    
+    push cx
+    mov cx, SCREEN_HALF_WIDTH
+    mov si, offset terrain_6
+    call render_pixel_string
+    inc ax
+    pop cx
+
+    pop di
+    pop cx    
+    pop ax
+    ret
+endp
+
+render_ally_ships proc
+    xor di, di
+    
     mov bl, 5
     mov ax, 20
     call render_model
@@ -820,78 +1162,205 @@ render_game_screen proc
     
     mov di, 32
     mov bl, 15
-    mov ax, 100
+    mov ax, [endereco_alida_x]
     call render_model
+
+    ret
+endp
     
-   game_loop:
-        push ax
+    
+render_bullet_one proc
+    mov bl, 11
+    mov di, [endereco_bullet1_y]
+    mov ax, [endereco_bullet1_x]
+    inc di
+    cmp di, SCREEN_WIDTH - MODEL_WIDTH
+    je delete_one
+    mov [endereco_bullet1_y], di
+    call render_model
+    ret
+    
+    delete_one:
+    call delete_model
+    ret
+endp
+
+render_bullet_two proc
+    mov bl, 11
+    mov di, [endereco_bullet2_y]
+    mov ax, [endereco_bullet2_x]
+    inc di
+    cmp di, SCREEN_WIDTH - MODEL_WIDTH
+    je delete_two
+    mov [endereco_bullet2_y], di
+    call render_model
+    ret
+    
+    delete_two:
+        call delete_model
+        ret
+endp
+
+render_bullet_three proc
+    mov bl, 11
+    mov di, [endereco_bullet3_y]
+    mov ax, [endereco_bullet3_x]
+    inc di
+    cmp di, SCREEN_WIDTH - MODEL_WIDTH
+    je delete_three
+    mov [endereco_bullet3_y], di
+    call render_model
+    ret
+    
+    delete_three:
+        call delete_model
+        ret
+endp
+
+render_render_bullet proc 
+    
+    cmp fire, 0
+    je finally
+
+    cmp fire, 1
+    je bullet_one
+
+    cmp fire, 2
+    je bullet_two
+
+    jmp bullet_three
+
+    bullet_one:
+        call render_bullet_one
+        ret
+
+    bullet_two:
+        call render_bullet_one
+        call render_bullet_two
+        ret
+        
+
+    bullet_three:
+        call render_bullet_one
+        call render_bullet_two
+        call render_bullet_three
+    
+    finally:
+
+    ret
+endp
+
+valid_bullet proc
+
+    cmp [fire], 1
+    je att_bullet_one
+    cmp [fire], 2
+    je att_bullet_two
+    cmp [fire], 3
+    je att_bullet_three
+
+    ret
+
+    att_bullet_one:
+        mov ax, [endereco_alida_x]
+        mov [endereco_bullet1_x], ax
+        ret
+
+    att_bullet_two:
+        mov ax, [endereco_alida_x]
+        mov [endereco_bullet2_x], ax
+        ret
+
+    att_bullet_three:
+        mov ax, [endereco_alida_x]
+        mov [endereco_bullet3_x], ax
+    ret
+endp
+
+render_game_screen proc
+    push ax
+    
+    call render_ally_ships
+    call render_terrain
+
+    mov [tempo_value], 60
+    mov [count_interno], 0
+
+    game_loop:
+        call start_timer
+        
+        call render_enemy_ship_interrupt
+        
+        call render_render_bullet
+        
+        mov cx, 0
+        mov dx, 2710h   ; 1000 em hexadecimal
+        call sleep
+        
         mov ah, 01h
         int 16h
-        cmp ah, 50h
-        je up_pressed
-        cmp ah, 48h
-        je down_pressed
-        
-        push di
-        mov di, ally_ship_y
-        call set_ally_model_speed
-        
-        call delete_model
-        mov bl, 15
-        dec ax
-        call render_model
-    
-        push ax    
-        call random_ax
-        
-        push di
-        mov di, enemy_ship_x
-        
-        move_enemy_loop:
-        push ax
-        mov ah, 01h
+        jz no_key_pressed   ; Pula para continuar o loop se nenhuma tecla foi pressionada
+
+        ; Se uma tecla foi pressionada, verifica qual foi
+        mov ah, 00h
         int 16h
-        cmp ah, 50h
-        je up_pressed
-        cmp ah, 48h
-        je down_pressed
-        pop ax
         
-        cmp di, 0
-        je ally
-        push ax
-        call set_enemy_model_speed
-        mov cl, 9
-        mov bh, 1
-        pop ax
-        call render_model_left
-        jmp move_enemy_loop  
+        cmp ah, 50h
+        je down_pressed
+        cmp ah, 48h
+        je up_pressed
+        cmp al, 20h     ; Compara se a tecla pressionada ? espa?o (0x20)
+        je space_pressed
     
-    ally:
-        call delete_model
-        pop ax
-        pop di
+    no_key_pressed:
+        ; Loop curto de atraso pode ser adicionado aqui se necess?rio
+        jmp game_loop
+
+    space_pressed:
+        mov ax, [fire]
+        inc ax
+        mov [fire], ax
+
+        cmp [fire], 4
+        je game_loop
+
+        call valid_bullet
+
         jmp game_loop
         
     up_pressed:
-        pop ax
+        mov di, 32
+        mov ax, [endereco_alida_x]
+        cmp ax, 20
+        je game_loop
+                
         call delete_model
         mov bl, 15
-        dec ax
+        
+        sub ax, 2
+        mov [endereco_alida_x], ax
+        
         call render_model
+        
         jmp game_loop
         
     down_pressed:
-        pop ax
+        mov di, 32
+        mov ax, [endereco_alida_x]
+        cmp ax, 170
+        je game_loop
+        
         call delete_model
         mov bl, 15
-        inc ax
+
+        add ax, 2
+        mov [endereco_alida_x], ax
+        
         call render_model
+        
         jmp game_loop
         
-    space_pressed:
-        ret
-    
+    ret
 endp
 
 set_ally_model_speed proc
@@ -912,7 +1381,7 @@ set_enemy_model_speed proc
     mov dx, 061A8h             
     call sleep
     pop cx
-    pop dx
+    pop ax
     ret
 endp
 
@@ -1038,7 +1507,9 @@ clear_screen proc
 endp
 
 render_game_over proc
-    mov bl, 04h  ; Cor azul para o texto
+    call clear_screen
+
+    mov bl, 04h
     xor dx, dx
     
     mov cx, LENGTH_GAME
