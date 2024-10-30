@@ -328,6 +328,8 @@ terrain_4 db  11, 11, 11, 11, 11, 11, 11, 11, 11, 11, \
     tempo_label db 'TEMPO:', 0
     
     tempo_value dw 60 ; Contador de segundos para 60s
+    tempo_value_char1 db ?
+    tempo_value_char2 db ?
     count_interno dw 0     ; contador interno para aproximadamente 1 segundo
 
     endereco_alida_x dw 100
@@ -885,13 +887,31 @@ render_status_bar proc
     mov si, offset tempo_label
     call render_string
 
-    ; Renderizar o valor do tempo restante na posi??o (linha 0, coluna 37)
-    mov bl, 02h  ; Cor verde
-    mov cx, 2          ; Tamanho do valor do tempo (2 d?gitos)
-    mov dl, 37         ; Coluna 37 (ap?s 'TEMPO:')
+    mov ax, [tempo_value] 
+    mov bx, 10              
+    xor dx, dx              
+    div bx                  
+    add dl, '0'            
+    mov [tempo_value_char2], dl  
     
+    mov ax, [tempo_value]   
+    mov bx, 10              
+    xor dx, dx               
+    div bx                   
+    add al, '0'             
+    mov [tempo_value_char1], al  
+    
+    mov cx, 1
+    mov bl, 02h
+    mov dl, 36              
+    mov si, offset tempo_value_char1
+    call render_string
 
-    mov si, offset tempo_value
+    
+    mov cx, 1
+    mov bl, 02h
+    mov dl, 37               
+    mov si, offset tempo_value_char2
     call render_string
 
     ; Restaurar registradores
@@ -1237,7 +1257,7 @@ render_game_screen proc
     call render_ally_ships
     call render_terrain
 
-    mov [tempo_value], 5
+    mov [tempo_value], 60
     mov [count_interno], 0
 
     game_loop:
@@ -1534,7 +1554,7 @@ start:
     je quit
     xor bx, bx
     
-    call render_setor_1
+    ;call render_setor_1
     call render_game_screen
     
     ;game_loop:
