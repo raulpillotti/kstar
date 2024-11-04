@@ -1133,11 +1133,6 @@ render_ally_ships proc
     ret
 endp
 
-check_collision proc
-
-  ret
-endp
-
 render_enemy_ships proc
 
     call render_enemy_ship1
@@ -1272,7 +1267,7 @@ activate_enemy_ship proc
     mov [count_interno_naves], 0
 
     render_enemy:
-      ; Procura uma nave n?o ativa e a ativa
+      ; Procura uma nave não ativa e a ativa
       cmp [inimiga1], 0
       je activate_enemy1
       cmp [inimiga2], 0
@@ -1280,35 +1275,216 @@ activate_enemy_ship proc
       cmp [inimiga3], 0
       je activate_enemy3
 
-      ; Se todas as naves estiverem ativas, n?o faz nada
+      ; Se todas as naves estiverem ativas, não faz nada
       jmp no_activation_inimiga
 
       activate_enemy1:
           mov [inimiga1], 1
-          call generate_random_x          ; Gera a posi??o aleat?ria x
+          call generate_random_x          ; Gera a posição aleatória x
           mov [inimiga1_x], ax    ; Usa o valor gerado
-          mov [inimiga1_y], 300 ; Alterar para 160 conforme est? no trabalho depois
+          mov [inimiga1_y], 300 ; Alterar para 160 conforme está no trabalho depois
           dec [total_inimigas]
           ret
 
       activate_enemy2:
           mov [inimiga2], 1
-          call generate_random_x          ; Gera a posi??o aleat?ria x
+          call generate_random_x          ; Gera a posição aleatória x
           mov [inimiga2_x], ax    ; Usa o valor gerado
-          mov [inimiga2_y], 300 ; Alterar para 160 conforme est? no trabalho depois
+          mov [inimiga2_y], 300 ; Alterar para 160 conforme está no trabalho depois
           dec [total_inimigas]
           ret
 
       activate_enemy3:
           mov [inimiga3], 1
-          call generate_random_x          ; Gera a posi??o aleat?ria x
+          call generate_random_x          ; Gera a posição aleatória x
           mov [inimiga3_x], ax    ; Usa o valor gerado
-          mov [inimiga3_y], 300 ; Alterar para 160 conforme est? no trabalho depois
+          mov [inimiga3_y], 300 ; Alterar para 160 conforme está no trabalho depois
           dec [total_inimigas]
           ret
 
     no_activation_inimiga:
     ret
+endp
+
+check_collision_enemy1 proc
+
+  mov dx, [inimiga1_x]      ; Carrega a coordenada X da nave inimiga em dx
+  mov si, [inimiga1_y]      ; Carrega a coordenada Y da nave inimiga em si
+
+  ; Verifica se o projétil está dentro da largura da nave inimiga (X-Axis)
+  mov bx, ax                ; Copia ax (posição X do projétil) para bx
+  sub bx, dx                ; Calcula a diferença bx = ax - dx
+  cmp bx, 0                 ; Verifica se o projétil está à esquerda da nave
+  jl short check_opposite1_x ; Se estiver à esquerda, verifica no sentido oposto
+
+  cmp bx, MODEL_WIDTH       ; Verifica se a diferença é maior que a largura da nave
+  jge short finally_collision1 ; Se estiver à direita da nave, não há colisão
+  jmp short check_y_axis1    ; Se estiver dentro, verifica o eixo Y
+
+  check_opposite1_x:
+    ; Se o projétil estiver à esquerda, inverte a lógica para lidar com a situação contrária
+    mov bx, dx
+    sub bx, ax                ; Calcula a diferença bx = dx - ax
+    cmp bx, 0
+    jl short finally_collision1 ; Se ainda for fora, não há colisão
+
+    cmp bx, MODEL_WIDTH
+    jge short finally_collision1 ; Se ainda for fora, não há colisão
+
+  check_y_axis1:
+    ; Verifica se o projétil está dentro da altura da nave inimiga (Y-Axis)
+    mov bx, di                ; Copia di (posição Y do projétil) para bx
+    sub bx, si                ; Calcula a diferença bx = di - si
+    cmp bx, 0                 ; Verifica se o projétil está acima da nave
+    jl short check_opposite1_y ; Se estiver acima, verifica no sentido oposto
+
+    cmp bx, MODEL_HEIGHT      ; Verifica se a diferença é maior que a altura da nave
+    jge short finally_collision1 ; Se estiver abaixo da nave, não há colisão
+    jmp short collision_found1 ; Se estiver dentro, há colisão
+
+  check_opposite1_y:
+    ; Se o projétil estiver acima, inverte a lógica para lidar com a situação contrária
+    mov bx, si
+    sub bx, di                ; Calcula a diferença bx = si - di
+    cmp bx, 0
+    jl short finally_collision1 ; Se ainda for fora, não há colisão
+
+    cmp bx, MODEL_HEIGHT
+    jge short finally_collision1 ; Se ainda for fora, não há colisão
+
+  collision_found1:
+    mov ax, [inimiga1_x]      ; Carrega a coordenada X da nave inimiga em dx
+    mov di, [inimiga1_y]      ; Carrega a coordenada Y da nave inimiga em si
+    mov [inimiga1], 0
+    call delete_model
+
+    mov ax, 1                 ; Marca colisão
+    ret
+
+  finally_collision1:
+    mov ax, 0                 ; Marca sem colisão
+
+    ret
+endp
+
+check_collision_enemy2 proc
+
+    mov dx, [inimiga2_x]      ; Carrega a coordenada X da nave inimiga em dx
+    mov si, [inimiga2_y]      ; Carrega a coordenada Y da nave inimiga em si
+
+    ; Verifica se o projétil está dentro da largura da nave inimiga (X-Axis)
+    mov bx, ax                ; Copia ax (posição X do projétil) para bx
+    sub bx, dx                ; Calcula a diferença bx = ax - dx
+    cmp bx, 0                 ; Verifica se o projétil está à esquerda da nave
+    jl short check_opposite2_x ; Se estiver à esquerda, verifica no sentido oposto
+
+    cmp bx, MODEL_WIDTH       ; Verifica se a diferença é maior que a largura da nave
+    jge short finally_collision2 ; Se estiver à direita da nave, não há colisão
+    jmp short check_y_axis2    ; Se estiver dentro, verifica o eixo Y
+
+  check_opposite2_x:
+      ; Se o projétil estiver à esquerda, inverte a lógica para lidar com a situação contrária
+      mov bx, dx
+      sub bx, ax                ; Calcula a diferença bx = dx - ax
+      cmp bx, 0
+      jl short finally_collision2 ; Se ainda for fora, não há colisão
+
+      cmp bx, MODEL_WIDTH
+      jge short finally_collision2 ; Se ainda for fora, não há colisão
+
+  check_y_axis2:
+      ; Verifica se o projétil está dentro da altura da nave inimiga (Y-Axis)
+      mov bx, di                ; Copia di (posição Y do projétil) para bx
+      sub bx, si                ; Calcula a diferença bx = di - si
+      cmp bx, 0                 ; Verifica se o projétil está acima da nave
+      jl short check_opposite2_y ; Se estiver acima, verifica no sentido oposto
+
+      cmp bx, MODEL_HEIGHT      ; Verifica se a diferença é maior que a altura da nave
+      jge short finally_collision2 ; Se estiver abaixo da nave, não há colisão
+      jmp short collision2_found ; Se estiver dentro, há colisão
+
+  check_opposite2_y:
+      ; Se o projétil estiver acima, inverte a lógica para lidar com a situação contrária
+      mov bx, si
+      sub bx, di                ; Calcula a diferença bx = si - di
+      cmp bx, 0
+      jl short finally_collision2 ; Se ainda for fora, não há colisão
+
+      cmp bx, MODEL_HEIGHT
+      jge short finally_collision2 ; Se ainda for fora, não há colisão
+
+  collision2_found:
+      mov ax, [inimiga2_x]      ; Carrega a coordenada X da nave inimiga em dx
+      mov di, [inimiga2_y]      ; Carrega a coordenada Y da nave inimiga em si
+      mov [inimiga2], 0
+    call delete_model
+      mov ax, 1                 ; Marca colisão
+      ret
+
+  finally_collision2:
+      mov ax, 0                 ; Marca sem colisão
+
+  ret
+endp
+
+check_collision_enemy3 proc
+
+    mov dx, [inimiga3_x]      ; Carrega a coordenada X da nave inimiga em dx
+    mov si, [inimiga3_y]      ; Carrega a coordenada Y da nave inimiga em si
+
+    ; Verifica se o projétil está dentro da largura da nave inimiga (X-Axis)
+    mov bx, ax                ; Copia ax (posição X do projétil) para bx
+    sub bx, dx                ; Calcula a diferença bx = ax - dx
+    cmp bx, 0                 ; Verifica se o projétil está à esquerda da nave
+    jl short check_opposite3_x ; Se estiver à esquerda, verifica no sentido oposto
+
+    cmp bx, MODEL_WIDTH       ; Verifica se a diferença é maior que a largura da nave
+    jge short finally_collision3 ; Se estiver à direita da nave, não há colisão
+    jmp short check_y_axis3    ; Se estiver dentro, verifica o eixo Y
+
+  check_opposite3_x:
+      ; Se o projétil estiver à esquerda, inverte a lógica para lidar com a situação contrária
+      mov bx, dx
+      sub bx, ax                ; Calcula a diferença bx = dx - ax
+      cmp bx, 0
+      jl short finally_collision3 ; Se ainda for fora, não há colisão
+
+      cmp bx, MODEL_WIDTH
+      jge short finally_collision3 ; Se ainda for fora, não há colisão
+
+  check_y_axis3:
+      ; Verifica se o projétil está dentro da altura da nave inimiga (Y-Axis)
+      mov bx, di                ; Copia di (posição Y do projétil) para bx
+      sub bx, si                ; Calcula a diferença bx = di - si
+      cmp bx, 0                 ; Verifica se o projétil está acima da nave
+      jl short check_opposite3_y ; Se estiver acima, verifica no sentido oposto
+
+      cmp bx, MODEL_HEIGHT      ; Verifica se a diferença é maior que a altura da nave
+      jge short finally_collision3 ; Se estiver abaixo da nave, não há colisão
+      jmp short collision_found3 ; Se estiver dentro, há colisão
+
+  check_opposite3_y:
+      ; Se o projétil estiver acima, inverte a lógica para lidar com a situação contrária
+      mov bx, si
+      sub bx, di                ; Calcula a diferença bx = si - di
+      cmp bx, 0
+      jl short finally_collision3 ; Se ainda for fora, não há colisão
+
+      cmp bx, MODEL_HEIGHT
+      jge short finally_collision3 ; Se ainda for fora, não há colisão
+
+  collision_found3:
+      mov ax, [inimiga3_x]      ; Carrega a coordenada X da nave inimiga em dx
+      mov di, [inimiga3_y]      ; Carrega a coordenada Y da nave inimiga em si
+      mov [inimiga3], 0
+      call delete_model
+      mov ax, 1                 ; Marca colisão
+      ret
+
+  finally_collision3:
+      mov ax, 0                 ; Marca sem colisão
+
+  ret
 endp
 
 render_bullet1 proc
@@ -1322,15 +1498,39 @@ render_bullet1 proc
     call delete_model
 
     inc di
+
+    push ax
+    push di
+
+    call check_collision_enemy1
+    cmp ax, 1
+    je restore_and_deleteBullet1
+
+    call check_collision_enemy2
+    cmp ax, 1
+    je restore_and_deleteBullet1
+
+    call check_collision_enemy3
+    cmp ax, 1
+
+    je restore_and_deleteBullet1
+
+    pop di
+    pop ax
+
     cmp di, SCREEN_WIDTH - MODEL_WIDTH
     je deleteBullet1
 
     mov [endereco_bullet1_y], di
     mov bl, 11
-    
+
     call render_model
     ret
-    
+
+    restore_and_deleteBullet1:
+      pop di
+      pop ax
+
     deleteBullet1:
 
       mov [bullet1], 0
@@ -1353,15 +1553,38 @@ render_bullet2 proc
     call delete_model
 
     inc di
+
+    push ax
+    push di
+
+    call check_collision_enemy1
+    cmp ax, 1
+    je restore_and_deleteBullet2
+
+    call check_collision_enemy2
+    cmp ax, 1
+    je restore_and_deleteBullet2
+
+    call check_collision_enemy3
+    cmp ax, 1
+    je restore_and_deleteBullet2
+
+    pop di
+    pop ax
+
     cmp di, SCREEN_WIDTH - MODEL_WIDTH
     je deleteBullet2
 
     mov [endereco_bullet2_y], di
     mov bl, 11
-    
+
     call render_model
     ret
-    
+
+    restore_and_deleteBullet2:
+      pop di
+      pop ax
+
     deleteBullet2:
 
       mov [bullet2], 0
@@ -1384,15 +1607,38 @@ render_bullet3 proc
     call delete_model
 
     inc di
+
+    push ax
+    push di
+
+    call check_collision_enemy1
+    cmp ax, 1
+    je restore_and_deleteBullet3
+
+    call check_collision_enemy2
+    cmp ax, 1
+    je restore_and_deleteBullet3
+
+    call check_collision_enemy3
+    cmp ax, 1
+    je restore_and_deleteBullet3
+
+    pop di
+    pop ax
+
     cmp di, SCREEN_WIDTH - MODEL_WIDTH
     je deleteBullet3
 
     mov [endereco_bullet3_y], di
     mov bl, 11
-    
+
     call render_model
     ret
-    
+
+    restore_and_deleteBullet3:
+      pop di
+      pop ax
+
     deleteBullet3:
 
       mov [bullet3], 0
@@ -1406,11 +1652,11 @@ endp
 
 render_render_bullet proc 
 
-    call render_bullet1
-    call render_bullet2
-    call render_bullet3
+  call render_bullet1
+  call render_bullet2
+  call render_bullet3
 
-    ret
+  ret
 endp
 
 valid_bullet proc
@@ -1479,7 +1725,6 @@ render_game_screen proc
           call activate_enemy_ship
 
         call render_render_bullet
-        call check_collision
 
         mov cx, 0
         mov dx, 2710h   ; 1000 em hexadecimal
