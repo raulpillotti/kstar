@@ -71,15 +71,15 @@ model small
                          0,0,0,0,0,0,0,0,0,0,0,9,9,0,0, \
                          0,0,0,9,9,9,9,9,9,9,9,9,9,9,9,
                          
-    bullet db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, \
+    bullet db 15,15,15,15,15,15,15,0,0,0,0,0,0,0,0, \
         0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, \
         0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, \
         0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, \
-        0,15,0,15,0,15,0,15,0,15,0,15,0,15,0, \
+        0,0,0,0,0,0,0,15,15,15,15,15,15,15,15, \
         0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, \
         0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, \
         0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, \
-        0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+        15,15,15,15,15,15,15,0,0,0,0,0,0,0,0,
 
 
     white_ship db    15,15,15,15,15,15,15,15,15,15,15,15,0,0,0, \
@@ -324,19 +324,33 @@ terrain_4 db  11, 11, 11, 11, 11, 11, 11, 11, 11, 11, \
     LENGTH_OVER equ 22              
     
     score_label db 'SCORE:', 0
-    score_value db '00000', 0
-    tempo_label db 'TEMPO:', 0
+    score_value dw 30
+    score_value_string db ?,?,?,?,?
     
+    tempo_label db 'TEMPO:', 0
     tempo_value dw 60 ; Contador de segundos para 60s
-    tempo_value_char1 db ?
-    tempo_value_char2 db ?
     tempo_value_string db ?,?
+    
     count_interno dw 0     ; contador interno para aproximadamente 1 segundo
+    count_interno_naves dw 0     ; contador interno para aproximadamente 1 segundo
 
     endereco_alida_x dw 100
     
-    inimiga_x dw 100
-    inimiga_y dw 160
+    inimiga1_x dw 100
+    inimiga1_y dw 160
+    inimiga1 dw 1
+
+    inimiga2_x dw 100
+    inimiga2_y dw 160
+    inimiga2 dw 0
+    
+    inimiga3_x dw 100
+    inimiga3_y dw 160
+    inimiga3 dw 0
+
+    total_inimigas dw 10
+
+    seed_render_naves dw 1234
 
     endereco_bullet1_x dw 100
     endereco_bullet1_y dw 46
@@ -348,6 +362,10 @@ terrain_4 db  11, 11, 11, 11, 11, 11, 11, 11, 11, 11, \
     endereco_bullet3_y dw 46
     
     fire dw 0
+    
+    bullet1 dw 0
+    bullet2 dw 0
+    bullet3 dw 0
     
     game_stage dw 0
     
@@ -648,53 +666,6 @@ delete_model proc
     ret
 endp
 
-;linha inicial em ax
-render_enemy_ship proc
-    mov di, SCREEN_WIDTH - MODEL_WIDTH
-    push ax
-    push cx
-    call delete_model
-
-
-    move_left_loop:
-        cmp di, 0
-        je end_render_enemy_ship
-        
-        ;;;;;;;;;;;;;;; Verifica??o de colis?o;;;;;;;
-        push di
-        push ax
-        push bx
-
-        xor bx, bx
-        mov bx, 320           
-        mul bx               
-        add di, ax
-        
-        ;se encontra pixel branco deveria apagar a nave
-        cmp byte ptr [es: di], 15
-        je end_render_enemy_ship
-        pop bx
-        pop ax
-        pop di
-        ;;;;;;;;;;;;;;;;;;;;;;;
-
-        push ax
-        call set_enemy_model_speed
-        mov cl, 9
-        mov bh, 1
-        pop ax
-        call render_model_left
-        jmp move_left_loop  
-    
-    end_render_enemy_ship: 
-        call delete_model
-        pop cx
-        pop ax
-        ret
-endp
-
-
-
 ; Tela inicial
 render_starting_screen proc
     call render_title
@@ -861,7 +832,7 @@ start_timer proc
 endp
 
 ;; cx = tamanho, bx = string buffer; ax = n?mero
-copy_uint16_to_string_buffer proc
+copy_int16_to_string_buffer proc
     push ax      ; Salvar registradores utilizados na proc
     push bx
     push cx
@@ -893,6 +864,51 @@ copy_uint16_to_string_buffer proc
 endp
 
 
+render_timer_tick proc
+    push cx
+    mov cx, 2
+    mov bx, offset tempo_value_string
+    mov ax, [tempo_value] 
+    call copy_int16_to_string_buffer
+    mov cx, 2
+    mov bl, 02h
+    mov dl, 36              
+    mov si, offset tempo_value_string
+    call render_string
+    
+    pop cx
+    ret
+endp
+
+sub_score_value proc
+    cmp [score_value], 0
+    jz end_sub_score_value
+    sub [score_value], ax
+    
+    end_sub_score_value: ret
+endp
+
+add_score_value proc
+    add [score_value], ax
+endp
+
+render_score_value proc
+    push cx
+    mov cx, 5
+    mov bx, offset score_value_string
+    mov ax, [score_value] 
+    call copy_int16_to_string_buffer
+    mov cx, 5
+    mov bl, 02h
+    mov dl, 7              
+    mov si, offset score_value_string
+    call render_string
+    
+    pop cx
+    ret
+endp
+
+
 render_status_bar proc
     ; Desenha a barra de status no topo da tela
     push ax
@@ -907,12 +923,12 @@ render_status_bar proc
     mov si, offset score_label
     call render_string
 
-    ; Renderizar o valor do score na posi??o (linha 0, coluna 7)
-    mov bl, 02h  ; Cor verde
-    mov cx, 5          ; Tamanho do valor do score
-    mov dl, 7          ; Coluna 7 (ap?s 'SCORE:')
-    mov si, offset score_value
-    call render_string
+    ;mov bl, 02h  ; Cor verde
+    ;mov cx, 5          ; Tamanho do valor do score
+    ;mov dl, 7          ; Coluna 7 (ap?s 'SCORE:')
+    ;call render_score_value
+    ;mov si, offset score_value
+    ; call render_string
 
     ; Renderizar "TEMPO:" na posi??o (linha 0, coluna 30)
     mov bl, 0Fh  ; Cor branca
@@ -921,26 +937,9 @@ render_status_bar proc
     mov si, offset tempo_label
     call render_string
     
-    mov cx, 2
-    mov bx, offset tempo_value_string
-    mov ax, [tempo_value] 
-    call copy_uint16_to_string_buffer
+    call render_timer_tick
+    call render_score_value
     
-    ;;;;;;;;;;;;;;;;;;;;;;
-    mov cx, 2
-    mov bl, 02h
-    mov dl, 36              
-    mov si, offset tempo_value_string
-    call render_string
-    pop cx
-    
-    ;mov cx, 1
-    ;mov bl, 02h
-    ;mov dl, 37               
-    ;mov si, offset tempo_value_char2
-    ;call render_string
-
-    ; Restaurar registradores
     pop cx
     pop dx
     pop ax
@@ -963,40 +962,6 @@ random_ax proc
     
     pop dx
     pop bx
-    ret
-endp
-
-render_enemy_ship_interrupt proc
-    ; Inicializa os valores
-    mov ax, [inimiga_x]
-    mov di, [inimiga_y]
-    
-    call delete_model
-    
-    mov bh, 1                      ; Alguma configura??o espec?fica do modelo (cor, etc.)
-    mov bl, 9                      ; Modelo da nave inimiga
-    
-    ; Gera um n?mero aleat?rio entre 0 e 1 para decidir se incrementa ou decrementa em X
-    call random_ax                    ; Sup?e que existe uma fun??o que retorna um n?mero aleat?rio em AX
-    and ax, 1                      ; Isola o bit menos significativo para ter 0 ou 1
-    test ax, ax                    ; Testa o resultado
-    jz decrementa_x                ; Se zero, pula para decrementar
-
-incrementa_x:
-    ;inc [inimiga_x]                ; Incrementa a posi??o X
-    jmp atualiza_y
-
-decrementa_x:
-    ;dec [inimiga_x]                ; Decrementa a posi??o X
-
-atualiza_y:
-    dec [inimiga_y]                ; Incrementa a posi??o Y independentemente do resultado de X
-
-    ; Renderiza o modelo da nave inimiga
-    mov ax, 100
-    mov di, [inimiga_y]
-    call render_model              ; Chamada para a fun??o que renderiza o modelo
-
     ret
 endp
 
@@ -1167,113 +1132,324 @@ render_ally_ships proc
 
     ret
 endp
-    
-    
-render_bullet_one proc
-    mov bl, 11
+
+check_collision proc
+
+  ret
+endp
+
+render_enemy_ships proc
+
+    call render_enemy_ship1
+    call render_enemy_ship2
+    call render_enemy_ship3
+
+    ret
+endp
+
+render_enemy_ship1 proc
+    cmp [inimiga1], 0
+    je endEnemy1
+
+    mov ax, [inimiga1_x]
+    mov di, [inimiga1_y]
+
+    call delete_model
+
+    dec di
+    jz deleteEnemy1
+
+    mov [inimiga1_y], di
+
+    mov bh, 1
+    mov bl, 9
+
+    call render_model
+    jmp endEnemy1
+
+    deleteEnemy1:
+      push ax
+      mov ax, 10
+      call sub_score_value
+      pop ax
+      mov [inimiga1], 0
+      call delete_model
+
+    endEnemy1:
+
+    ret
+endp
+
+render_enemy_ship2 proc
+    cmp [inimiga2], 0
+    je endEnemy2
+
+    mov ax, [inimiga2_x]
+    mov di, [inimiga2_y]
+
+    call delete_model
+
+    dec di
+    jz deleteEnemy2
+
+    mov [inimiga2_y], di
+
+    mov bh, 1
+    mov bl, 9
+
+    call render_model
+    jmp endEnemy2
+
+    deleteEnemy2:
+      push ax
+      mov ax, 10
+      call sub_score_value
+      pop ax
+      mov [inimiga2], 0
+      call delete_model
+
+    endEnemy2:
+
+    ret
+endp
+
+render_enemy_ship3 proc
+    cmp [inimiga3], 0
+    je endEnemy3
+
+    mov ax, [inimiga3_x]
+    mov di, [inimiga3_y]
+
+    call delete_model
+
+    dec di
+    jz deleteEnemy3
+    mov [inimiga3_y], di
+
+    mov bh, 1
+    mov bl, 9
+
+    call render_model
+    jmp endEnemy3
+
+    deleteEnemy3:
+      push ax
+      mov ax, 10
+      call sub_score_value
+      pop ax
+      mov [inimiga3], 0
+      call delete_model
+
+    endEnemy3:
+
+    ret
+endp
+
+generate_random_x proc
+    mov ax, [seed_render_naves]
+
+    imul ax
+    add ax, 12345
+
+    mov [seed_render_naves], ax
+
+    mov cx, 141
+    xor dx, dx
+    div cx
+    add dx, 20
+    mov ax, dx
+
+    ret
+endp
+
+activate_enemy_ship proc
+
+    inc [count_interno_naves]
+
+    cmp [count_interno_naves], 180   ; Adapte este n?mero baseado na velocidade de execu??o do loop
+    jl short no_activation_inimiga   ; Se ainda n?o passou 1 segundo, pula para continuar o jogo
+
+    mov [count_interno_naves], 0
+
+    render_enemy:
+      ; Procura uma nave n?o ativa e a ativa
+      cmp [inimiga1], 0
+      je activate_enemy1
+      cmp [inimiga2], 0
+      je activate_enemy2
+      cmp [inimiga3], 0
+      je activate_enemy3
+
+      ; Se todas as naves estiverem ativas, n?o faz nada
+      jmp no_activation_inimiga
+
+      activate_enemy1:
+          mov [inimiga1], 1
+          call generate_random_x          ; Gera a posi??o aleat?ria x
+          mov [inimiga1_x], ax    ; Usa o valor gerado
+          mov [inimiga1_y], 300 ; Alterar para 160 conforme est? no trabalho depois
+          dec [total_inimigas]
+          ret
+
+      activate_enemy2:
+          mov [inimiga2], 1
+          call generate_random_x          ; Gera a posi??o aleat?ria x
+          mov [inimiga2_x], ax    ; Usa o valor gerado
+          mov [inimiga2_y], 300 ; Alterar para 160 conforme est? no trabalho depois
+          dec [total_inimigas]
+          ret
+
+      activate_enemy3:
+          mov [inimiga3], 1
+          call generate_random_x          ; Gera a posi??o aleat?ria x
+          mov [inimiga3_x], ax    ; Usa o valor gerado
+          mov [inimiga3_y], 300 ; Alterar para 160 conforme est? no trabalho depois
+          dec [total_inimigas]
+          ret
+
+    no_activation_inimiga:
+    ret
+endp
+
+render_bullet1 proc
+
+    cmp [bullet1], 0
+    je endRender1
+
     mov di, [endereco_bullet1_y]
     mov ax, [endereco_bullet1_x]
+
+    call delete_model
+
     inc di
     cmp di, SCREEN_WIDTH - MODEL_WIDTH
-    je delete_one
+    je deleteBullet1
+
     mov [endereco_bullet1_y], di
+    mov bl, 11
+    
     call render_model
     ret
     
-    delete_one:
-    call delete_model
+    deleteBullet1:
+
+      mov [bullet1], 0
+      dec [fire]
+      
+      call delete_model
+
+    endRender1:
     ret
 endp
 
-render_bullet_two proc
-    mov bl, 11
+render_bullet2 proc
+
+    cmp [bullet2], 0
+    je endRender2
+
     mov di, [endereco_bullet2_y]
     mov ax, [endereco_bullet2_x]
+
+    call delete_model
+
     inc di
     cmp di, SCREEN_WIDTH - MODEL_WIDTH
-    je delete_two
+    je deleteBullet2
+
     mov [endereco_bullet2_y], di
+    mov bl, 11
+    
     call render_model
     ret
     
-    delete_two:
-        call delete_model
-        ret
+    deleteBullet2:
+
+      mov [bullet2], 0
+      dec [fire]
+      
+      call delete_model
+
+    endRender2:
+    ret
 endp
 
-render_bullet_three proc
-    mov bl, 11
+render_bullet3 proc
+
+    cmp [bullet3], 0
+    je endRender3
+
     mov di, [endereco_bullet3_y]
     mov ax, [endereco_bullet3_x]
+
+    call delete_model
+
     inc di
     cmp di, SCREEN_WIDTH - MODEL_WIDTH
-    je delete_three
+    je deleteBullet3
+
     mov [endereco_bullet3_y], di
+    mov bl, 11
+    
     call render_model
     ret
     
-    delete_three:
-        call delete_model
-        ret
+    deleteBullet3:
+
+      mov [bullet3], 0
+      dec [fire]
+      
+      call delete_model
+
+    endRender3:
+    ret
 endp
 
 render_render_bullet proc 
-    
-    cmp fire, 0
-    je finally
 
-    cmp fire, 1
-    je bullet_one
-
-    cmp fire, 2
-    je bullet_two
-
-    jmp bullet_three
-
-    bullet_one:
-        call render_bullet_one
-        ret
-
-    bullet_two:
-        call render_bullet_one
-        call render_bullet_two
-        ret
-        
-
-    bullet_three:
-        call render_bullet_one
-        call render_bullet_two
-        call render_bullet_three
-    
-    finally:
+    call render_bullet1
+    call render_bullet2
+    call render_bullet3
 
     ret
 endp
 
 valid_bullet proc
 
-    cmp [fire], 1
-    je att_bullet_one
-    cmp [fire], 2
-    je att_bullet_two
-    cmp [fire], 3
-    je att_bullet_three
+    cmp [bullet1], 0
+    je activate_bullet1
+    cmp [bullet2], 0
+    je activate_bullet2
+    cmp [bullet3], 0
+    je activate_bullet3
 
-    ret
+    jmp no_activation
 
-    att_bullet_one:
+    activate_bullet1:
         mov ax, [endereco_alida_x]
         mov [endereco_bullet1_x], ax
+        mov [endereco_bullet1_y], 46
+        mov [bullet1], 1
+        inc [fire]
         ret
 
-    att_bullet_two:
+    activate_bullet2:
         mov ax, [endereco_alida_x]
         mov [endereco_bullet2_x], ax
+        mov [endereco_bullet2_y], 46
+        mov [bullet2], 1
+        inc [fire]
         ret
 
-    att_bullet_three:
+    activate_bullet3:
         mov ax, [endereco_alida_x]
         mov [endereco_bullet3_x], ax
+        mov [endereco_bullet3_y], 46
+        mov [bullet3], 1
+        inc [fire]
+        ret
+
+    no_activation:
+
     ret
 endp
 
@@ -1285,14 +1461,26 @@ render_game_screen proc
 
     mov [tempo_value], 60
     mov [count_interno], 0
+    mov [total_inimigas], 10
 
     game_loop:
         call start_timer
+
+        cmp [total_inimigas], 0
+        jne render_naves
+
+        ;; DEPOIS DE RENDERIZAR AS 10 NAVES
         
-        call render_enemy_ship_interrupt
-        
+        ;; pode renderizar mais de 10 naves ao todo, s? n?o podem ser simult?neas 
+        ;ret
+
+        render_naves:
+          call render_enemy_ships
+          call activate_enemy_ship
+
         call render_render_bullet
-        
+        call check_collision
+
         mov cx, 0
         mov dx, 2710h   ; 1000 em hexadecimal
         call sleep
@@ -1317,16 +1505,12 @@ render_game_screen proc
         jmp game_loop
 
     space_pressed:
-        mov ax, [fire]
-        inc ax
-        mov [fire], ax
+      cmp [fire], 3
+      je game_loop ; Se todos os slots estiverem ocupados, volta para o loop do jogo
 
-        cmp [fire], 4
-        je game_loop
+      call valid_bullet
 
-        call valid_bullet
-
-        jmp game_loop
+      jmp game_loop
         
     up_pressed:
         mov di, 32
