@@ -779,28 +779,63 @@ render_starting_screen proc
     ret
 endp
 
+reset_game_state proc
+    call clear_screen
+    
+    mov [tempo_value], 60
+    
+    mov [inimiga1_x], 100
+    mov [inimiga1_y], 160
+    mov [inimiga1], 1
+    mov [inimiga2_x], 100
+    mov [inimiga2_y], 160
+    mov [inimiga2], 1
+    mov [inimiga3_x], 100
+    mov [inimiga3_y], 160
+    mov [inimiga3], 1
+    
+    mov [endereco_bullet1_x], 100
+    mov [endereco_bullet1_y], 46
+    mov [endereco_bullet2_x], 100
+    mov [endereco_bullet2_y], 46
+    mov [endereco_bullet3_x], 100
+    mov [endereco_bullet3_y], 46
+    
+    ;fire dw 0
+    
+    ;bullet1 dw 0
+    ;bullet2 dw 0
+    ;bullet3 dw 0
+    ret
+endp
+
 game_flow proc
+    call reset_game_state  
     inc [game_stage]
     cmp [game_stage], 1
-    je stage_2  
+    je stage_1  
     cmp [game_stage], 2
-    je stage_3
+    je stage_2
     cmp [game_stage], 3
-    je game_over   
+    je stage_3
+    cmp [game_stage], 4
+    je game_over
+ 
+    stage_1:
+        call render_setor_1
+        call render_game_screen  
 
     stage_2:
-        call clear_screen
         call render_setor_2
         call render_game_screen
 
     stage_3:
-        call clear_screen
         call render_setor_3
         call render_game_screen
 
     game_over:
-        call clear_screen
         call render_game_over
+        call start
     ret
 endp
 
@@ -1267,7 +1302,7 @@ activate_enemy_ship proc
     mov [count_interno_naves], 0
 
     render_enemy:
-      ; Procura uma nave não ativa e a ativa
+      ; Procura uma nave n?o ativa e a ativa
       cmp [inimiga1], 0
       je activate_enemy1
       cmp [inimiga2], 0
@@ -1275,30 +1310,30 @@ activate_enemy_ship proc
       cmp [inimiga3], 0
       je activate_enemy3
 
-      ; Se todas as naves estiverem ativas, não faz nada
+      ; Se todas as naves estiverem ativas, n?o faz nada
       jmp no_activation_inimiga
 
       activate_enemy1:
           mov [inimiga1], 1
-          call generate_random_x          ; Gera a posição aleatória x
+          call generate_random_x          ; Gera a posi??o aleat?ria x
           mov [inimiga1_x], ax    ; Usa o valor gerado
-          mov [inimiga1_y], 300 ; Alterar para 160 conforme está no trabalho depois
+          mov [inimiga1_y], 300 ; Alterar para 160 conforme est? no trabalho depois
           dec [total_inimigas]
           ret
 
       activate_enemy2:
           mov [inimiga2], 1
-          call generate_random_x          ; Gera a posição aleatória x
+          call generate_random_x          ; Gera a posi??o aleat?ria x
           mov [inimiga2_x], ax    ; Usa o valor gerado
-          mov [inimiga2_y], 300 ; Alterar para 160 conforme está no trabalho depois
+          mov [inimiga2_y], 300 ; Alterar para 160 conforme est? no trabalho depois
           dec [total_inimigas]
           ret
 
       activate_enemy3:
           mov [inimiga3], 1
-          call generate_random_x          ; Gera a posição aleatória x
+          call generate_random_x          ; Gera a posi??o aleat?ria x
           mov [inimiga3_x], ax    ; Usa o valor gerado
-          mov [inimiga3_y], 300 ; Alterar para 160 conforme está no trabalho depois
+          mov [inimiga3_y], 300 ; Alterar para 160 conforme est? no trabalho depois
           dec [total_inimigas]
           ret
 
@@ -1311,46 +1346,46 @@ check_collision_enemy1 proc
   mov dx, [inimiga1_x]      ; Carrega a coordenada X da nave inimiga em dx
   mov si, [inimiga1_y]      ; Carrega a coordenada Y da nave inimiga em si
 
-  ; Verifica se o projétil está dentro da largura da nave inimiga (X-Axis)
-  mov bx, ax                ; Copia ax (posição X do projétil) para bx
-  sub bx, dx                ; Calcula a diferença bx = ax - dx
-  cmp bx, 0                 ; Verifica se o projétil está à esquerda da nave
-  jl short check_opposite1_x ; Se estiver à esquerda, verifica no sentido oposto
+  ; Verifica se o proj?til est? dentro da largura da nave inimiga (X-Axis)
+  mov bx, ax                ; Copia ax (posi??o X do proj?til) para bx
+  sub bx, dx                ; Calcula a diferen?a bx = ax - dx
+  cmp bx, 0                 ; Verifica se o proj?til est? ? esquerda da nave
+  jl short check_opposite1_x ; Se estiver ? esquerda, verifica no sentido oposto
 
-  cmp bx, MODEL_WIDTH       ; Verifica se a diferença é maior que a largura da nave
-  jge short finally_collision1 ; Se estiver à direita da nave, não há colisão
+  cmp bx, MODEL_WIDTH       ; Verifica se a diferen?a ? maior que a largura da nave
+  jge short finally_collision1 ; Se estiver ? direita da nave, n?o h? colis?o
   jmp short check_y_axis1    ; Se estiver dentro, verifica o eixo Y
 
   check_opposite1_x:
-    ; Se o projétil estiver à esquerda, inverte a lógica para lidar com a situação contrária
+    ; Se o proj?til estiver ? esquerda, inverte a l?gica para lidar com a situa??o contr?ria
     mov bx, dx
-    sub bx, ax                ; Calcula a diferença bx = dx - ax
+    sub bx, ax                ; Calcula a diferen?a bx = dx - ax
     cmp bx, 0
-    jl short finally_collision1 ; Se ainda for fora, não há colisão
+    jl short finally_collision1 ; Se ainda for fora, n?o h? colis?o
 
     cmp bx, MODEL_WIDTH
-    jge short finally_collision1 ; Se ainda for fora, não há colisão
+    jge short finally_collision1 ; Se ainda for fora, n?o h? colis?o
 
   check_y_axis1:
-    ; Verifica se o projétil está dentro da altura da nave inimiga (Y-Axis)
-    mov bx, di                ; Copia di (posição Y do projétil) para bx
-    sub bx, si                ; Calcula a diferença bx = di - si
-    cmp bx, 0                 ; Verifica se o projétil está acima da nave
+    ; Verifica se o proj?til est? dentro da altura da nave inimiga (Y-Axis)
+    mov bx, di                ; Copia di (posi??o Y do proj?til) para bx
+    sub bx, si                ; Calcula a diferen?a bx = di - si
+    cmp bx, 0                 ; Verifica se o proj?til est? acima da nave
     jl short check_opposite1_y ; Se estiver acima, verifica no sentido oposto
 
-    cmp bx, MODEL_HEIGHT      ; Verifica se a diferença é maior que a altura da nave
-    jge short finally_collision1 ; Se estiver abaixo da nave, não há colisão
-    jmp short collision_found1 ; Se estiver dentro, há colisão
+    cmp bx, MODEL_HEIGHT      ; Verifica se a diferen?a ? maior que a altura da nave
+    jge short finally_collision1 ; Se estiver abaixo da nave, n?o h? colis?o
+    jmp short collision_found1 ; Se estiver dentro, h? colis?o
 
   check_opposite1_y:
-    ; Se o projétil estiver acima, inverte a lógica para lidar com a situação contrária
+    ; Se o proj?til estiver acima, inverte a l?gica para lidar com a situa??o contr?ria
     mov bx, si
-    sub bx, di                ; Calcula a diferença bx = si - di
+    sub bx, di                ; Calcula a diferen?a bx = si - di
     cmp bx, 0
-    jl short finally_collision1 ; Se ainda for fora, não há colisão
+    jl short finally_collision1 ; Se ainda for fora, n?o h? colis?o
 
     cmp bx, MODEL_HEIGHT
-    jge short finally_collision1 ; Se ainda for fora, não há colisão
+    jge short finally_collision1 ; Se ainda for fora, n?o h? colis?o
 
   collision_found1:
     mov ax, [inimiga1_x]      ; Carrega a coordenada X da nave inimiga em dx
@@ -1358,11 +1393,11 @@ check_collision_enemy1 proc
     mov [inimiga1], 0
     call delete_model
 
-    mov ax, 1                 ; Marca colisão
+    mov ax, 1                 ; Marca colis?o
     ret
 
   finally_collision1:
-    mov ax, 0                 ; Marca sem colisão
+    mov ax, 0                 ; Marca sem colis?o
 
     ret
 endp
@@ -1372,57 +1407,57 @@ check_collision_enemy2 proc
     mov dx, [inimiga2_x]      ; Carrega a coordenada X da nave inimiga em dx
     mov si, [inimiga2_y]      ; Carrega a coordenada Y da nave inimiga em si
 
-    ; Verifica se o projétil está dentro da largura da nave inimiga (X-Axis)
-    mov bx, ax                ; Copia ax (posição X do projétil) para bx
-    sub bx, dx                ; Calcula a diferença bx = ax - dx
-    cmp bx, 0                 ; Verifica se o projétil está à esquerda da nave
-    jl short check_opposite2_x ; Se estiver à esquerda, verifica no sentido oposto
+    ; Verifica se o proj?til est? dentro da largura da nave inimiga (X-Axis)
+    mov bx, ax                ; Copia ax (posi??o X do proj?til) para bx
+    sub bx, dx                ; Calcula a diferen?a bx = ax - dx
+    cmp bx, 0                 ; Verifica se o proj?til est? ? esquerda da nave
+    jl short check_opposite2_x ; Se estiver ? esquerda, verifica no sentido oposto
 
-    cmp bx, MODEL_WIDTH       ; Verifica se a diferença é maior que a largura da nave
-    jge short finally_collision2 ; Se estiver à direita da nave, não há colisão
+    cmp bx, MODEL_WIDTH       ; Verifica se a diferen?a ? maior que a largura da nave
+    jge short finally_collision2 ; Se estiver ? direita da nave, n?o h? colis?o
     jmp short check_y_axis2    ; Se estiver dentro, verifica o eixo Y
 
   check_opposite2_x:
-      ; Se o projétil estiver à esquerda, inverte a lógica para lidar com a situação contrária
+      ; Se o proj?til estiver ? esquerda, inverte a l?gica para lidar com a situa??o contr?ria
       mov bx, dx
-      sub bx, ax                ; Calcula a diferença bx = dx - ax
+      sub bx, ax                ; Calcula a diferen?a bx = dx - ax
       cmp bx, 0
-      jl short finally_collision2 ; Se ainda for fora, não há colisão
+      jl short finally_collision2 ; Se ainda for fora, n?o h? colis?o
 
       cmp bx, MODEL_WIDTH
-      jge short finally_collision2 ; Se ainda for fora, não há colisão
+      jge short finally_collision2 ; Se ainda for fora, n?o h? colis?o
 
   check_y_axis2:
-      ; Verifica se o projétil está dentro da altura da nave inimiga (Y-Axis)
-      mov bx, di                ; Copia di (posição Y do projétil) para bx
-      sub bx, si                ; Calcula a diferença bx = di - si
-      cmp bx, 0                 ; Verifica se o projétil está acima da nave
+      ; Verifica se o proj?til est? dentro da altura da nave inimiga (Y-Axis)
+      mov bx, di                ; Copia di (posi??o Y do proj?til) para bx
+      sub bx, si                ; Calcula a diferen?a bx = di - si
+      cmp bx, 0                 ; Verifica se o proj?til est? acima da nave
       jl short check_opposite2_y ; Se estiver acima, verifica no sentido oposto
 
-      cmp bx, MODEL_HEIGHT      ; Verifica se a diferença é maior que a altura da nave
-      jge short finally_collision2 ; Se estiver abaixo da nave, não há colisão
-      jmp short collision2_found ; Se estiver dentro, há colisão
+      cmp bx, MODEL_HEIGHT      ; Verifica se a diferen?a ? maior que a altura da nave
+      jge short finally_collision2 ; Se estiver abaixo da nave, n?o h? colis?o
+      jmp short collision2_found ; Se estiver dentro, h? colis?o
 
   check_opposite2_y:
-      ; Se o projétil estiver acima, inverte a lógica para lidar com a situação contrária
+      ; Se o proj?til estiver acima, inverte a l?gica para lidar com a situa??o contr?ria
       mov bx, si
-      sub bx, di                ; Calcula a diferença bx = si - di
+      sub bx, di                ; Calcula a diferen?a bx = si - di
       cmp bx, 0
-      jl short finally_collision2 ; Se ainda for fora, não há colisão
+      jl short finally_collision2 ; Se ainda for fora, n?o h? colis?o
 
       cmp bx, MODEL_HEIGHT
-      jge short finally_collision2 ; Se ainda for fora, não há colisão
+      jge short finally_collision2 ; Se ainda for fora, n?o h? colis?o
 
   collision2_found:
       mov ax, [inimiga2_x]      ; Carrega a coordenada X da nave inimiga em dx
       mov di, [inimiga2_y]      ; Carrega a coordenada Y da nave inimiga em si
       mov [inimiga2], 0
     call delete_model
-      mov ax, 1                 ; Marca colisão
+      mov ax, 1                 ; Marca colis?o
       ret
 
   finally_collision2:
-      mov ax, 0                 ; Marca sem colisão
+      mov ax, 0                 ; Marca sem colis?o
 
   ret
 endp
@@ -1432,57 +1467,57 @@ check_collision_enemy3 proc
     mov dx, [inimiga3_x]      ; Carrega a coordenada X da nave inimiga em dx
     mov si, [inimiga3_y]      ; Carrega a coordenada Y da nave inimiga em si
 
-    ; Verifica se o projétil está dentro da largura da nave inimiga (X-Axis)
-    mov bx, ax                ; Copia ax (posição X do projétil) para bx
-    sub bx, dx                ; Calcula a diferença bx = ax - dx
-    cmp bx, 0                 ; Verifica se o projétil está à esquerda da nave
-    jl short check_opposite3_x ; Se estiver à esquerda, verifica no sentido oposto
+    ; Verifica se o proj?til est? dentro da largura da nave inimiga (X-Axis)
+    mov bx, ax                ; Copia ax (posi??o X do proj?til) para bx
+    sub bx, dx                ; Calcula a diferen?a bx = ax - dx
+    cmp bx, 0                 ; Verifica se o proj?til est? ? esquerda da nave
+    jl short check_opposite3_x ; Se estiver ? esquerda, verifica no sentido oposto
 
-    cmp bx, MODEL_WIDTH       ; Verifica se a diferença é maior que a largura da nave
-    jge short finally_collision3 ; Se estiver à direita da nave, não há colisão
+    cmp bx, MODEL_WIDTH       ; Verifica se a diferen?a ? maior que a largura da nave
+    jge short finally_collision3 ; Se estiver ? direita da nave, n?o h? colis?o
     jmp short check_y_axis3    ; Se estiver dentro, verifica o eixo Y
 
   check_opposite3_x:
-      ; Se o projétil estiver à esquerda, inverte a lógica para lidar com a situação contrária
+      ; Se o proj?til estiver ? esquerda, inverte a l?gica para lidar com a situa??o contr?ria
       mov bx, dx
-      sub bx, ax                ; Calcula a diferença bx = dx - ax
+      sub bx, ax                ; Calcula a diferen?a bx = dx - ax
       cmp bx, 0
-      jl short finally_collision3 ; Se ainda for fora, não há colisão
+      jl short finally_collision3 ; Se ainda for fora, n?o h? colis?o
 
       cmp bx, MODEL_WIDTH
-      jge short finally_collision3 ; Se ainda for fora, não há colisão
+      jge short finally_collision3 ; Se ainda for fora, n?o h? colis?o
 
   check_y_axis3:
-      ; Verifica se o projétil está dentro da altura da nave inimiga (Y-Axis)
-      mov bx, di                ; Copia di (posição Y do projétil) para bx
-      sub bx, si                ; Calcula a diferença bx = di - si
-      cmp bx, 0                 ; Verifica se o projétil está acima da nave
+      ; Verifica se o proj?til est? dentro da altura da nave inimiga (Y-Axis)
+      mov bx, di                ; Copia di (posi??o Y do proj?til) para bx
+      sub bx, si                ; Calcula a diferen?a bx = di - si
+      cmp bx, 0                 ; Verifica se o proj?til est? acima da nave
       jl short check_opposite3_y ; Se estiver acima, verifica no sentido oposto
 
-      cmp bx, MODEL_HEIGHT      ; Verifica se a diferença é maior que a altura da nave
-      jge short finally_collision3 ; Se estiver abaixo da nave, não há colisão
-      jmp short collision_found3 ; Se estiver dentro, há colisão
+      cmp bx, MODEL_HEIGHT      ; Verifica se a diferen?a ? maior que a altura da nave
+      jge short finally_collision3 ; Se estiver abaixo da nave, n?o h? colis?o
+      jmp short collision_found3 ; Se estiver dentro, h? colis?o
 
   check_opposite3_y:
-      ; Se o projétil estiver acima, inverte a lógica para lidar com a situação contrária
+      ; Se o proj?til estiver acima, inverte a l?gica para lidar com a situa??o contr?ria
       mov bx, si
-      sub bx, di                ; Calcula a diferença bx = si - di
+      sub bx, di                ; Calcula a diferen?a bx = si - di
       cmp bx, 0
-      jl short finally_collision3 ; Se ainda for fora, não há colisão
+      jl short finally_collision3 ; Se ainda for fora, n?o h? colis?o
 
       cmp bx, MODEL_HEIGHT
-      jge short finally_collision3 ; Se ainda for fora, não há colisão
+      jge short finally_collision3 ; Se ainda for fora, n?o h? colis?o
 
   collision_found3:
       mov ax, [inimiga3_x]      ; Carrega a coordenada X da nave inimiga em dx
       mov di, [inimiga3_y]      ; Carrega a coordenada Y da nave inimiga em si
       mov [inimiga3], 0
       call delete_model
-      mov ax, 1                 ; Marca colisão
+      mov ax, 1                 ; Marca colis?o
       ret
 
   finally_collision3:
-      mov ax, 0                 ; Marca sem colisão
+      mov ax, 0                 ; Marca sem colis?o
 
   ret
 endp
@@ -1705,7 +1740,6 @@ render_game_screen proc
     call render_ally_ships
     call render_terrain
 
-    mov [tempo_value], 60
     mov [count_interno], 0
     mov [total_inimigas], 10
 
@@ -1982,8 +2016,8 @@ render_game_over proc
     mov cx, 003Dh     
     mov dx, 0900h  
     call sleep
-    call clear_screen
-    call render_starting_screen
+    ;call clear_screen
+    ;call render_starting_screen
 
     ret
 endp
@@ -1995,6 +2029,9 @@ start:
     xor ax, ax
     mov dx, 0A000H    
     mov es, dx
+    
+    cmp [game_stage], 4
+    je quit
 
     xor ax, ax
     xor di, di
@@ -2003,17 +2040,8 @@ start:
     
     mov ax, 1
     call render_starting_screen
-    call clear_screen
     
-    cmp bx, 0
-    je quit
-    xor bx, bx
-    
-    ;call render_setor_1
-    call render_game_screen
-    
-    ;game_loop:
-    ;jmp game_loop
+    call game_flow
     quit: end start
         
 end start
