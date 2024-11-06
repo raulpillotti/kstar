@@ -334,21 +334,22 @@ terrain_4 db  11, 11, 11, 11, 11, 11, 11, 11, 11, 11, \
     count_interno dw 0     ; contador interno para aproximadamente 1 segundo
     count_interno_naves dw 0     ; contador interno para aproximadamente 1 segundo
 
-    endereco_alida_x dw 100
+    endereco_nave_aliada_x dw 100
+    endereco_nave_aliada_y dw 32
     
-    inimiga1_x dw 100
-    inimiga1_y dw 160
-    inimiga1 dw 1
+    endereco_inimiga1_x dw 100
+    endereco_inimiga1_y dw 160
+    nave_inimiga1_ativa dw 0
 
-    inimiga2_x dw 100
-    inimiga2_y dw 160
-    inimiga2 dw 0
+    endereco_inimiga2_x dw 100
+    endereco_inimiga2_y dw 160
+    nave_inimiga2_ativa dw 0
     
-    inimiga3_x dw 100
-    inimiga3_y dw 160
-    inimiga3 dw 0
+    endereco_inimiga3_x dw 100
+    endereco_inimiga3_y dw 160
+    nave_inimiga3_ativa dw 0
 
-    total_inimigas dw 10
+    total_naves_inimigas dw 10
 
     seed_render_naves dw 1234
 
@@ -369,6 +370,15 @@ terrain_4 db  11, 11, 11, 11, 11, 11, 11, 11, 11, 11, \
     
     game_stage dw 0
     
+    nave_aliada1_ativa dw 0
+    nave_aliada2_ativa dw 0
+    nave_aliada3_ativa dw 0
+    nave_aliada4_ativa dw 0
+    nave_aliada5_ativa dw 0
+    nave_aliada6_ativa dw 0
+    nave_aliada7_ativa dw 0
+    nave_aliada8_ativa dw 0
+
     cr equ 13
     lf equ 10    
     
@@ -784,16 +794,18 @@ reset_game_state proc
     
     mov [tempo_value], 60
     
-    mov [inimiga1_x], 100
-    mov [inimiga1_y], 160
-    mov [inimiga1], 1
-    mov [inimiga2_x], 100
-    mov [inimiga2_y], 160
-    mov [inimiga2], 1
-    mov [inimiga3_x], 100
-    mov [inimiga3_y], 160
-    mov [inimiga3], 1
-    
+    mov [endereco_inimiga1_x], 100
+    mov [endereco_inimiga1_y], 160
+    mov [nave_inimiga1_ativa], 1
+
+    mov [endereco_inimiga2_x], 100
+    mov [endereco_inimiga2_y], 160
+    mov [nave_inimiga2_ativa], 1
+
+    mov [endereco_inimiga3_x], 100
+    mov [endereco_inimiga3_y], 160
+    mov [nave_inimiga3_ativa], 1
+
     mov [endereco_bullet1_x], 100
     mov [endereco_bullet1_y], 46
     mov [endereco_bullet2_x], 100
@@ -811,31 +823,40 @@ endp
 
 game_flow proc
     call reset_game_state  
+
     inc [game_stage]
+
     cmp [game_stage], 1
     je stage_1  
+
     cmp [game_stage], 2
     je stage_2
+
     cmp [game_stage], 3
     je stage_3
+
     cmp [game_stage], 4
     je game_over
- 
+
     stage_1:
         call render_setor_1
+        mov [total_naves_inimigas], 10
         call render_game_screen  
 
     stage_2:
         call render_setor_2
+        mov [total_naves_inimigas], 15
         call render_game_screen
 
     stage_3:
         call render_setor_3
+        mov [total_naves_inimigas], 20
         call render_game_screen
 
     game_over:
         call render_game_over
         call start
+
     ret
 endp
 
@@ -1130,39 +1151,47 @@ render_ally_ships proc
     
     mov bl, 5
     mov ax, 20
+    mov [nave_aliada1_ativa], 1
     call render_model
     
     mov bl, 3
     mov ax, 40
+    mov [nave_aliada2_ativa], 1
     call render_model
     
     mov bl, 6
     mov ax, 60
+    mov [nave_aliada3_ativa], 1
     call render_model
     
     mov bl, 7
     mov ax, 80
+    mov [nave_aliada4_ativa], 1
     call render_model
     
     mov bl, 2
     mov ax, 100
+    mov [nave_aliada5_ativa], 1
     call render_model
     
     mov bl, 4
     mov ax, 120
+    mov [nave_aliada6_ativa], 1
     call render_model
     
     mov bl, 0EH
     mov ax, 140
+    mov [nave_aliada7_ativa], 1
     call render_model
     
     mov bl, 1
     mov ax, 160
+    mov [nave_aliada8_ativa], 1
     call render_model
     
     mov di, 32
     mov bl, 15
-    mov ax, [endereco_alida_x]
+    mov ax, [endereco_nave_aliada_x]
     call render_model
 
     ret
@@ -1177,19 +1206,134 @@ render_enemy_ships proc
     ret
 endp
 
+check_collision_ally proc
+
+    cmp si, 0
+    je finally_collision_end
+
+    ; Verifica se o proj?til est? dentro da largura da nave inimiga (X-Axis)
+    mov bx, ax                ; Copia ax (posi??o X do proj?til) para bx
+    sub bx, dx                ; Calcula a diferen?a bx = ax - dx
+    cmp bx, 0                 ; Verifica se o proj?til est? ? esquerda da nave
+    jl short check_opposite_x ; Se estiver ? esquerda, verifica no sentido oposto
+
+    cmp bx, MODEL_WIDTH       ; Verifica se a diferen?a ? maior que a largura da nave
+    jge short finally_collision ; Se estiver ? direita da nave, n?o h? colis?o
+    jmp short check_y_axis    ; Se estiver dentro, verifica o eixo Y
+
+  check_opposite_x:
+      ; Se o proj?til estiver ? esquerda, inverte a l?gica para lidar com a situa??o contr?ria
+      mov bx, dx
+      sub bx, ax                ; Calcula a diferen?a bx = dx - ax
+      cmp bx, 0
+      jl short finally_collision ; Se ainda for fora, n?o h? colis?o
+
+      cmp bx, MODEL_WIDTH
+      jge short finally_collision ; Se ainda for fora, n?o h? colis?o
+
+  check_y_axis:
+      ; Verifica se o proj?til est? dentro da altura da nave inimiga (Y-Axis)
+      mov bx, di                ; Copia di (posi??o Y do proj?til) para bx
+      sub bx, 0                ; Calcula a diferen?a bx = di - si
+      cmp bx, 0                 ; Verifica se o proj?til est? acima da nave
+      jl short check_opposite_y ; Se estiver acima, verifica no sentido oposto
+
+      cmp bx, MODEL_HEIGHT      ; Verifica se a diferen?a ? maior que a altura da nave
+      jge short finally_collision ; Se estiver abaixo da nave, n?o h? colis?o
+      jmp short collision_found ; Se estiver dentro, h? colis?o
+
+  check_opposite_y:
+      ; Se o proj?til estiver acima, inverte a l?gica para lidar com a situa??o contr?ria
+      mov bx, 0
+      sub bx, di                ; Calcula a diferen?a bx = si - di
+      cmp bx, 0
+      jl short finally_collision ; Se ainda for fora, n?o h? colis?o
+
+      cmp bx, MODEL_HEIGHT
+      jge short finally_collision ; Se ainda for fora, n?o h? colis?o
+
+  collision_found:
+      mov ax, dx
+      mov di, 0
+      call delete_model
+
+      mov si, 0
+      ret
+
+    finally_collision:
+      mov si, 1
+
+    finally_collision_end:
+
+  ret
+endp
+
+valid_collision proc
+
+    mov dx, 20
+    mov si, [nave_aliada1_ativa]
+    call check_collision_ally
+    mov [nave_aliada1_ativa], si
+
+    mov dx, 40
+    mov si, [nave_aliada2_ativa]
+    call check_collision_ally
+    mov [nave_aliada2_ativa], si
+
+    mov dx, 60
+    mov si, [nave_aliada3_ativa]
+    call check_collision_ally
+    mov [nave_aliada3_ativa], si
+
+    mov dx, 80
+    mov si, [nave_aliada4_ativa]
+    call check_collision_ally
+    mov [nave_aliada4_ativa], si
+
+    mov dx, 100
+    mov si, [nave_aliada5_ativa]
+    call check_collision_ally
+    mov [nave_aliada5_ativa], si
+
+    mov dx, 120
+    mov si, [nave_aliada6_ativa]
+    call check_collision_ally
+    mov [nave_aliada6_ativa], si
+
+    mov dx, 140
+    mov si, [nave_aliada7_ativa]
+    call check_collision_ally
+    mov [nave_aliada7_ativa], si
+
+    mov dx, 160
+    mov si, [nave_aliada8_ativa]
+    call check_collision_ally
+    mov [nave_aliada8_ativa], si
+
+  ret
+endp
+
 render_enemy_ship1 proc
-    cmp [inimiga1], 0
+    cmp [nave_inimiga1_ativa], 0
     je endEnemy1
 
-    mov ax, [inimiga1_x]
-    mov di, [inimiga1_y]
+    mov ax, [endereco_inimiga1_x]
+    mov di, [endereco_inimiga1_y]
 
     call delete_model
+
+    push ax
+    push di
+
+    call valid_collision
+
+    pop di
+    pop ax
 
     dec di
     jz deleteEnemy1
 
-    mov [inimiga1_y], di
+    mov [endereco_inimiga1_y], di
 
     mov bh, 1
     mov bl, 9
@@ -1202,7 +1346,7 @@ render_enemy_ship1 proc
       mov ax, 10
       call sub_score_value
       pop ax
-      mov [inimiga1], 0
+      mov [nave_inimiga1_ativa], 0
       call delete_model
 
     endEnemy1:
@@ -1211,18 +1355,26 @@ render_enemy_ship1 proc
 endp
 
 render_enemy_ship2 proc
-    cmp [inimiga2], 0
+    cmp [nave_inimiga2_ativa], 0
     je endEnemy2
 
-    mov ax, [inimiga2_x]
-    mov di, [inimiga2_y]
+    mov ax, [endereco_inimiga2_x]
+    mov di, [endereco_inimiga2_y]
 
     call delete_model
+
+    push ax
+    push di
+
+    call valid_collision
+
+    pop di
+    pop ax
 
     dec di
     jz deleteEnemy2
 
-    mov [inimiga2_y], di
+    mov [endereco_inimiga2_y], di
 
     mov bh, 1
     mov bl, 9
@@ -1235,7 +1387,7 @@ render_enemy_ship2 proc
       mov ax, 10
       call sub_score_value
       pop ax
-      mov [inimiga2], 0
+      mov [nave_inimiga2_ativa], 0
       call delete_model
 
     endEnemy2:
@@ -1244,17 +1396,25 @@ render_enemy_ship2 proc
 endp
 
 render_enemy_ship3 proc
-    cmp [inimiga3], 0
+    cmp [nave_inimiga3_ativa], 0
     je endEnemy3
 
-    mov ax, [inimiga3_x]
-    mov di, [inimiga3_y]
+    mov ax, [endereco_inimiga3_x]
+    mov di, [endereco_inimiga3_y]
 
     call delete_model
 
+    push ax
+    push di
+
+    call valid_collision
+
+    pop di
+    pop ax
+
     dec di
     jz deleteEnemy3
-    mov [inimiga3_y], di
+    mov [endereco_inimiga3_y], di
 
     mov bh, 1
     mov bl, 9
@@ -1267,7 +1427,7 @@ render_enemy_ship3 proc
       mov ax, 10
       call sub_score_value
       pop ax
-      mov [inimiga3], 0
+      mov [nave_inimiga3_ativa], 0
       call delete_model
 
     endEnemy3:
@@ -1278,16 +1438,20 @@ endp
 generate_random_x proc
     mov ax, [seed_render_naves]
 
-    imul ax
-    add ax, 12345
+    ; Gera um número pseudo-aleatório baseado na semente
+    imul ax                   ; Multip'lica a semente por ela mesma para gerar uma nova sequência
+    add ax, 12345             ; Adiciona um deslocamento constante para variar a sequência
 
     mov [seed_render_naves], ax
 
-    mov cx, 141
+    ; Define o intervalo e faz a divisão para restringir o valor
+    mov cx, 121               ; O intervalo (140 - 20 + 1 = 121)
     xor dx, dx
-    div cx
-    add dx, 20
-    mov ax, dx
+    div cx                    ; ax / 121, dx terá o resto (entre 0 e 120)
+
+    ; Ajusta o número gerado para começar em 20
+    add dx, 20                ; dx agora estará entre 20 e 140
+    mov ax, dx                ; Transfere o valor final para ax
 
     ret
 endp
@@ -1296,45 +1460,45 @@ activate_enemy_ship proc
 
     inc [count_interno_naves]
 
-    cmp [count_interno_naves], 180   ; Adapte este n?mero baseado na velocidade de execu??o do loop
+    cmp [count_interno_naves], 100   ; Adapte este n?mero baseado na velocidade de execu??o do loop
     jl short no_activation_inimiga   ; Se ainda n?o passou 1 segundo, pula para continuar o jogo
 
     mov [count_interno_naves], 0
 
     render_enemy:
       ; Procura uma nave n?o ativa e a ativa
-      cmp [inimiga1], 0
+      cmp [nave_inimiga1_ativa], 0
       je activate_enemy1
-      cmp [inimiga2], 0
+      cmp [nave_inimiga2_ativa], 0
       je activate_enemy2
-      cmp [inimiga3], 0
+      cmp [nave_inimiga3_ativa], 0
       je activate_enemy3
 
       ; Se todas as naves estiverem ativas, n?o faz nada
       jmp no_activation_inimiga
 
       activate_enemy1:
-          mov [inimiga1], 1
+          mov [nave_inimiga1_ativa], 1
           call generate_random_x          ; Gera a posi??o aleat?ria x
-          mov [inimiga1_x], ax    ; Usa o valor gerado
-          mov [inimiga1_y], 300 ; Alterar para 160 conforme est? no trabalho depois
-          dec [total_inimigas]
+          mov [endereco_inimiga1_x], ax    ; Usa o valor gerado
+          mov [endereco_inimiga1_y], 300 ; Alterar para 160 conforme est? no trabalho depois
+          dec [total_naves_inimigas]
           ret
 
       activate_enemy2:
-          mov [inimiga2], 1
+          mov [nave_inimiga2_ativa], 1
           call generate_random_x          ; Gera a posi??o aleat?ria x
-          mov [inimiga2_x], ax    ; Usa o valor gerado
-          mov [inimiga2_y], 300 ; Alterar para 160 conforme est? no trabalho depois
-          dec [total_inimigas]
+          mov [endereco_inimiga2_x], ax    ; Usa o valor gerado
+          mov [endereco_inimiga2_y], 300 ; Alterar para 160 conforme est? no trabalho depois
+          dec [total_naves_inimigas]
           ret
 
       activate_enemy3:
-          mov [inimiga3], 1
+          mov [nave_inimiga3_ativa], 1
           call generate_random_x          ; Gera a posi??o aleat?ria x
-          mov [inimiga3_x], ax    ; Usa o valor gerado
-          mov [inimiga3_y], 300 ; Alterar para 160 conforme est? no trabalho depois
-          dec [total_inimigas]
+          mov [endereco_inimiga3_x], ax    ; Usa o valor gerado
+          mov [endereco_inimiga3_y], 300 ; Alterar para 160 conforme est? no trabalho depois
+          dec [total_naves_inimigas]
           ret
 
     no_activation_inimiga:
@@ -1343,69 +1507,76 @@ endp
 
 check_collision_enemy1 proc
 
-  mov dx, [inimiga1_x]      ; Carrega a coordenada X da nave inimiga em dx
-  mov si, [inimiga1_y]      ; Carrega a coordenada Y da nave inimiga em si
+    cmp [nave_inimiga1_ativa], 0
+    je finally_collision1
 
-  ; Verifica se o proj?til est? dentro da largura da nave inimiga (X-Axis)
-  mov bx, ax                ; Copia ax (posi??o X do proj?til) para bx
-  sub bx, dx                ; Calcula a diferen?a bx = ax - dx
-  cmp bx, 0                 ; Verifica se o proj?til est? ? esquerda da nave
-  jl short check_opposite1_x ; Se estiver ? esquerda, verifica no sentido oposto
+    mov dx, [endereco_inimiga1_x]      ; Carrega a coordenada X da nave inimiga em dx
+    mov si, [endereco_inimiga1_y]      ; Carrega a coordenada Y da nave inimiga em si
 
-  cmp bx, MODEL_WIDTH       ; Verifica se a diferen?a ? maior que a largura da nave
-  jge short finally_collision1 ; Se estiver ? direita da nave, n?o h? colis?o
-  jmp short check_y_axis1    ; Se estiver dentro, verifica o eixo Y
+    ; Verifica se o proj?til est? dentro da largura da nave inimiga (X-Axis)
+    mov bx, ax                ; Copia ax (posi??o X do proj?til) para bx
+    sub bx, dx                ; Calcula a diferen?a bx = ax - dx
+    cmp bx, 0                 ; Verifica se o proj?til est? ? esquerda da nave
+    jl short check_opposite1_x ; Se estiver ? esquerda, verifica no sentido oposto
+
+    cmp bx, MODEL_WIDTH       ; Verifica se a diferen?a ? maior que a largura da nave
+    jge short finally_collision1 ; Se estiver ? direita da nave, n?o h? colis?o
+    jmp short check_y_axis1    ; Se estiver dentro, verifica o eixo Y
 
   check_opposite1_x:
-    ; Se o proj?til estiver ? esquerda, inverte a l?gica para lidar com a situa??o contr?ria
-    mov bx, dx
-    sub bx, ax                ; Calcula a diferen?a bx = dx - ax
-    cmp bx, 0
-    jl short finally_collision1 ; Se ainda for fora, n?o h? colis?o
+      ; Se o proj?til estiver ? esquerda, inverte a l?gica para lidar com a situa??o contr?ria
+      mov bx, dx
+      sub bx, ax                ; Calcula a diferen?a bx = dx - ax
+      cmp bx, 0
+      jl short finally_collision1 ; Se ainda for fora, n?o h? colis?o
 
-    cmp bx, MODEL_WIDTH
-    jge short finally_collision1 ; Se ainda for fora, n?o h? colis?o
+      cmp bx, MODEL_WIDTH
+      jge short finally_collision1 ; Se ainda for fora, n?o h? colis?o
 
   check_y_axis1:
-    ; Verifica se o proj?til est? dentro da altura da nave inimiga (Y-Axis)
-    mov bx, di                ; Copia di (posi??o Y do proj?til) para bx
-    sub bx, si                ; Calcula a diferen?a bx = di - si
-    cmp bx, 0                 ; Verifica se o proj?til est? acima da nave
-    jl short check_opposite1_y ; Se estiver acima, verifica no sentido oposto
+      ; Verifica se o proj?til est? dentro da altura da nave inimiga (Y-Axis)
+      mov bx, di                ; Copia di (posi??o Y do proj?til) para bx
+      sub bx, si                ; Calcula a diferen?a bx = di - si
+      cmp bx, 0                 ; Verifica se o proj?til est? acima da nave
+      jl short check_opposite1_y ; Se estiver acima, verifica no sentido oposto
 
-    cmp bx, MODEL_HEIGHT      ; Verifica se a diferen?a ? maior que a altura da nave
-    jge short finally_collision1 ; Se estiver abaixo da nave, n?o h? colis?o
-    jmp short collision_found1 ; Se estiver dentro, h? colis?o
+      cmp bx, MODEL_HEIGHT      ; Verifica se a diferen?a ? maior que a altura da nave
+      jge short finally_collision1 ; Se estiver abaixo da nave, n?o h? colis?o
+      jmp short collision1_found ; Se estiver dentro, h? colis?o
 
   check_opposite1_y:
-    ; Se o proj?til estiver acima, inverte a l?gica para lidar com a situa??o contr?ria
-    mov bx, si
-    sub bx, di                ; Calcula a diferen?a bx = si - di
-    cmp bx, 0
-    jl short finally_collision1 ; Se ainda for fora, n?o h? colis?o
+      ; Se o proj?til estiver acima, inverte a l?gica para lidar com a situa??o contr?ria
+      mov bx, si
+      sub bx, di                ; Calcula a diferen?a bx = si - di
+      cmp bx, 0
+      jl short finally_collision1 ; Se ainda for fora, n?o h? colis?o
 
-    cmp bx, MODEL_HEIGHT
-    jge short finally_collision1 ; Se ainda for fora, n?o h? colis?o
+      cmp bx, MODEL_HEIGHT
+      jge short finally_collision1 ; Se ainda for fora, n?o h? colis?o
 
-  collision_found1:
-    mov ax, [inimiga1_x]      ; Carrega a coordenada X da nave inimiga em dx
-    mov di, [inimiga1_y]      ; Carrega a coordenada Y da nave inimiga em si
-    mov [inimiga1], 0
-    call delete_model
-
-    mov ax, 1                 ; Marca colis?o
-    ret
+  collision1_found:
+      mov ax, [endereco_inimiga1_x]      ; Carrega a coordenada X da nave inimiga em dx
+      mov di, [endereco_inimiga1_y]      ; Carrega a coordenada Y da nave inimiga em si
+      mov [nave_inimiga1_ativa], 0
+      call delete_model
+      mov ax, 100
+      call add_score_value
+      mov ax, 1                 ; Marca colis?o
+      ret
 
   finally_collision1:
-    mov ax, 0                 ; Marca sem colis?o
+      mov ax, 0                 ; Marca sem colis?o
 
-    ret
+  ret
 endp
 
 check_collision_enemy2 proc
 
-    mov dx, [inimiga2_x]      ; Carrega a coordenada X da nave inimiga em dx
-    mov si, [inimiga2_y]      ; Carrega a coordenada Y da nave inimiga em si
+    cmp [nave_inimiga2_ativa], 0
+    je finally_collision2
+
+    mov dx, [endereco_inimiga2_x]      ; Carrega a coordenada X da nave inimiga em dx
+    mov si, [endereco_inimiga2_y]      ; Carrega a coordenada Y da nave inimiga em si
 
     ; Verifica se o proj?til est? dentro da largura da nave inimiga (X-Axis)
     mov bx, ax                ; Copia ax (posi??o X do proj?til) para bx
@@ -1449,10 +1620,12 @@ check_collision_enemy2 proc
       jge short finally_collision2 ; Se ainda for fora, n?o h? colis?o
 
   collision2_found:
-      mov ax, [inimiga2_x]      ; Carrega a coordenada X da nave inimiga em dx
-      mov di, [inimiga2_y]      ; Carrega a coordenada Y da nave inimiga em si
-      mov [inimiga2], 0
-    call delete_model
+      mov ax, [endereco_inimiga2_x]      ; Carrega a coordenada X da nave inimiga em dx
+      mov di, [endereco_inimiga2_y]      ; Carrega a coordenada Y da nave inimiga em si
+      mov [nave_inimiga2_ativa], 0
+      call delete_model
+      mov ax, 100
+      call add_score_value
       mov ax, 1                 ; Marca colis?o
       ret
 
@@ -1464,8 +1637,11 @@ endp
 
 check_collision_enemy3 proc
 
-    mov dx, [inimiga3_x]      ; Carrega a coordenada X da nave inimiga em dx
-    mov si, [inimiga3_y]      ; Carrega a coordenada Y da nave inimiga em si
+    cmp [nave_inimiga3_ativa], 0
+    je finally_collision3
+
+    mov dx, [endereco_inimiga3_x]      ; Carrega a coordenada X da nave inimiga em dx
+    mov si, [endereco_inimiga3_y]      ; Carrega a coordenada Y da nave inimiga em si
 
     ; Verifica se o proj?til est? dentro da largura da nave inimiga (X-Axis)
     mov bx, ax                ; Copia ax (posi??o X do proj?til) para bx
@@ -1509,10 +1685,14 @@ check_collision_enemy3 proc
       jge short finally_collision3 ; Se ainda for fora, n?o h? colis?o
 
   collision_found3:
-      mov ax, [inimiga3_x]      ; Carrega a coordenada X da nave inimiga em dx
-      mov di, [inimiga3_y]      ; Carrega a coordenada Y da nave inimiga em si
-      mov [inimiga3], 0
+      mov ax, [endereco_inimiga3_x]      ; Carrega a coordenada X da nave inimiga em dx
+      mov di, [endereco_inimiga3_y]      ; Carrega a coordenada Y da nave inimiga em si
+      mov [nave_inimiga3_ativa], 0
       call delete_model
+
+      mov ax, 100
+      call add_score_value
+
       mov ax, 1                 ; Marca colis?o
       ret
 
@@ -1532,8 +1712,6 @@ render_bullet1 proc
 
     call delete_model
 
-    inc di
-
     push ax
     push di
 
@@ -1541,18 +1719,30 @@ render_bullet1 proc
     cmp ax, 1
     je restore_and_deleteBullet1
 
+    pop di
+    pop ax
+
+    push ax
+    push di
+
     call check_collision_enemy2
     cmp ax, 1
     je restore_and_deleteBullet1
+    
+    pop di
+    pop ax
+
+    push ax
+    push di
 
     call check_collision_enemy3
     cmp ax, 1
-
     je restore_and_deleteBullet1
 
     pop di
     pop ax
 
+    inc di
     cmp di, SCREEN_WIDTH - MODEL_WIDTH
     je deleteBullet1
 
@@ -1562,18 +1752,17 @@ render_bullet1 proc
     call render_model
     ret
 
-    restore_and_deleteBullet1:
-      pop di
-      pop ax
+  restore_and_deleteBullet1:
+    pop di
+    pop ax
 
-    deleteBullet1:
+  deleteBullet1:
+    mov [bullet1], 0
+    dec [fire]
+    call delete_model
 
-      mov [bullet1], 0
-      dec [fire]
-      
-      call delete_model
+  endRender1:
 
-    endRender1:
     ret
 endp
 
@@ -1587,8 +1776,6 @@ render_bullet2 proc
 
     call delete_model
 
-    inc di
-
     push ax
     push di
 
@@ -1596,9 +1783,21 @@ render_bullet2 proc
     cmp ax, 1
     je restore_and_deleteBullet2
 
+    pop di
+    pop ax
+
+    push ax
+    push di
+
     call check_collision_enemy2
     cmp ax, 1
     je restore_and_deleteBullet2
+    
+    pop di
+    pop ax
+
+    push ax
+    push di
 
     call check_collision_enemy3
     cmp ax, 1
@@ -1607,6 +1806,7 @@ render_bullet2 proc
     pop di
     pop ax
 
+    inc di
     cmp di, SCREEN_WIDTH - MODEL_WIDTH
     je deleteBullet2
 
@@ -1616,18 +1816,17 @@ render_bullet2 proc
     call render_model
     ret
 
-    restore_and_deleteBullet2:
-      pop di
-      pop ax
+  restore_and_deleteBullet2:
+    pop di
+    pop ax
 
-    deleteBullet2:
+  deleteBullet2:
+    mov [bullet2], 0
+    dec [fire]
+    call delete_model
 
-      mov [bullet2], 0
-      dec [fire]
-      
-      call delete_model
+  endRender2:
 
-    endRender2:
     ret
 endp
 
@@ -1641,8 +1840,6 @@ render_bullet3 proc
 
     call delete_model
 
-    inc di
-
     push ax
     push di
 
@@ -1650,9 +1847,21 @@ render_bullet3 proc
     cmp ax, 1
     je restore_and_deleteBullet3
 
+    pop di
+    pop ax
+
+    push ax
+    push di
+
     call check_collision_enemy2
     cmp ax, 1
     je restore_and_deleteBullet3
+    
+    pop di
+    pop ax
+
+    push ax
+    push di
 
     call check_collision_enemy3
     cmp ax, 1
@@ -1661,6 +1870,7 @@ render_bullet3 proc
     pop di
     pop ax
 
+    inc di
     cmp di, SCREEN_WIDTH - MODEL_WIDTH
     je deleteBullet3
 
@@ -1670,18 +1880,17 @@ render_bullet3 proc
     call render_model
     ret
 
-    restore_and_deleteBullet3:
-      pop di
-      pop ax
+  restore_and_deleteBullet3:
+    pop di
+    pop ax
 
-    deleteBullet3:
+  deleteBullet3:
+    mov [bullet3], 0
+    dec [fire]
+    call delete_model
 
-      mov [bullet3], 0
-      dec [fire]
-      
-      call delete_model
+  endRender3:
 
-    endRender3:
     ret
 endp
 
@@ -1706,7 +1915,7 @@ valid_bullet proc
     jmp no_activation
 
     activate_bullet1:
-        mov ax, [endereco_alida_x]
+        mov ax, [endereco_nave_aliada_x]
         mov [endereco_bullet1_x], ax
         mov [endereco_bullet1_y], 46
         mov [bullet1], 1
@@ -1714,7 +1923,7 @@ valid_bullet proc
         ret
 
     activate_bullet2:
-        mov ax, [endereco_alida_x]
+        mov ax, [endereco_nave_aliada_x]
         mov [endereco_bullet2_x], ax
         mov [endereco_bullet2_y], 46
         mov [bullet2], 1
@@ -1722,7 +1931,7 @@ valid_bullet proc
         ret
 
     activate_bullet3:
-        mov ax, [endereco_alida_x]
+        mov ax, [endereco_nave_aliada_x]
         mov [endereco_bullet3_x], ax
         mov [endereco_bullet3_y], 46
         mov [bullet3], 1
@@ -1734,6 +1943,12 @@ valid_bullet proc
     ret
 endp
 
+check_nave_principal proc
+
+
+  ret
+endp
+
 render_game_screen proc
     push ax
     
@@ -1741,22 +1956,33 @@ render_game_screen proc
     call render_terrain
 
     mov [count_interno], 0
-    mov [total_inimigas], 10
+    mov [nave_inimiga1_ativa], 0
+    mov [nave_inimiga2_ativa], 0
+    mov [nave_inimiga3_ativa], 0
+    mov [seed_render_naves], 1234
 
     game_loop:
         call start_timer
 
-        cmp [total_inimigas], 0
+        cmp [total_naves_inimigas], 0
+        jne active_naves
+
+        cmp [nave_inimiga1_ativa], 0
         jne render_naves
 
-        ;; DEPOIS DE RENDERIZAR AS 10 NAVES
+        cmp [nave_inimiga2_ativa], 0
+        jne render_naves
+
+        cmp [nave_inimiga3_ativa], 0
+        jne render_naves
         
-        ;; pode renderizar mais de 10 naves ao todo, s? n?o podem ser simult?neas 
-        ;ret
+        jmp floor_one_completed
+
+        active_naves:
+          call activate_enemy_ship
 
         render_naves:
           call render_enemy_ships
-          call activate_enemy_ship
 
         call render_render_bullet
 
@@ -1793,7 +2019,7 @@ render_game_screen proc
         
     up_pressed:
         mov di, 32
-        mov ax, [endereco_alida_x]
+        mov ax, [endereco_nave_aliada_x]
         cmp ax, 20
         je game_loop
                 
@@ -1801,7 +2027,7 @@ render_game_screen proc
         mov bl, 15
         
         sub ax, 2
-        mov [endereco_alida_x], ax
+        mov [endereco_nave_aliada_x], ax
         
         call render_model
         
@@ -1809,7 +2035,7 @@ render_game_screen proc
         
     down_pressed:
         mov di, 32
-        mov ax, [endereco_alida_x]
+        mov ax, [endereco_nave_aliada_x]
         cmp ax, 170
         je game_loop
         
@@ -1817,12 +2043,15 @@ render_game_screen proc
         mov bl, 15
 
         add ax, 2
-        mov [endereco_alida_x], ax
+        mov [endereco_nave_aliada_x], ax
         
         call render_model
         
         jmp game_loop
-        
+    
+    floor_one_completed:
+      call game_flow
+
     ret
 endp
 
