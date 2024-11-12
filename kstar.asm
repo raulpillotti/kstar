@@ -1342,10 +1342,14 @@ render_enemy_ship1 proc
     jmp endEnemy1
 
     deleteEnemy1:
+      push cx
       push ax
-      mov ax, 10
+      mov ax, [game_stage]
+      mov cx, 10
+      mul cx
       call sub_score_value
       pop ax
+      pop cx
       mov [nave_inimiga1_ativa], 0
       call delete_model
 
@@ -1383,10 +1387,14 @@ render_enemy_ship2 proc
     jmp endEnemy2
 
     deleteEnemy2:
+      push cx
       push ax
-      mov ax, 10
+      mov ax, [game_stage]
+      mov cx, 10
+      mul cx
       call sub_score_value
       pop ax
+      pop cx
       mov [nave_inimiga2_ativa], 0
       call delete_model
 
@@ -1423,10 +1431,14 @@ render_enemy_ship3 proc
     jmp endEnemy3
 
     deleteEnemy3:
+      push cx
       push ax
-      mov ax, 10
+      mov ax, [game_stage]
+      mov cx, 10
+      mul cx
       call sub_score_value
       pop ax
+      pop cx
       mov [nave_inimiga3_ativa], 0
       call delete_model
 
@@ -1438,19 +1450,19 @@ endp
 generate_random_x proc
     mov ax, [seed_render_naves]
 
-    ; Gera um número pseudo-aleatório baseado na semente
-    imul ax                   ; Multip'lica a semente por ela mesma para gerar uma nova sequência
-    add ax, 12345             ; Adiciona um deslocamento constante para variar a sequência
+    ; Gera um n?mero pseudo-aleat?rio baseado na semente
+    imul ax                   ; Multip'lica a semente por ela mesma para gerar uma nova sequ?ncia
+    add ax, 12345             ; Adiciona um deslocamento constante para variar a sequ?ncia
 
     mov [seed_render_naves], ax
 
-    ; Define o intervalo e faz a divisão para restringir o valor
+    ; Define o intervalo e faz a divis?o para restringir o valor
     mov cx, 121               ; O intervalo (140 - 20 + 1 = 121)
     xor dx, dx
-    div cx                    ; ax / 121, dx terá o resto (entre 0 e 120)
+    div cx                    ; ax / 121, dx ter? o resto (entre 0 e 120)
 
-    ; Ajusta o número gerado para começar em 20
-    add dx, 20                ; dx agora estará entre 20 e 140
+    ; Ajusta o n?mero gerado para come?ar em 20
+    add dx, 20                ; dx agora estar? entre 20 e 140
     mov ax, dx                ; Transfere o valor final para ax
 
     ret
