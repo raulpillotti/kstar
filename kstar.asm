@@ -324,7 +324,7 @@ terrain_4 db  11, 11, 11, 11, 11, 11, 11, 11, 11, 11, \
     LENGTH_OVER equ 22              
     
     score_label db 'SCORE:', 0
-    score_value dw 30
+    score_value dw 2000
     score_value_string db ?,?,?,?,?
     
     tempo_label db 'TEMPO:', 0
@@ -369,6 +369,7 @@ terrain_4 db  11, 11, 11, 11, 11, 11, 11, 11, 11, 11, \
     bullet3 dw 0
     
     game_stage dw 0
+    ships_remaining dw 8
     
     nave_aliada1_ativa dw 0
     nave_aliada2_ativa dw 0
@@ -791,34 +792,60 @@ endp
 
 reset_game_state proc
     call clear_screen
-    
     mov [tempo_value], 60
     
-    mov [endereco_inimiga1_x], 100
-    mov [endereco_inimiga1_y], 160
-    mov [nave_inimiga1_ativa], 1
-
-    mov [endereco_inimiga2_x], 100
-    mov [endereco_inimiga2_y], 160
-    mov [nave_inimiga2_ativa], 1
-
-    mov [endereco_inimiga3_x], 100
-    mov [endereco_inimiga3_y], 160
-    mov [nave_inimiga3_ativa], 1
-
-    mov [endereco_bullet1_x], 100
-    mov [endereco_bullet1_y], 46
-    mov [endereco_bullet2_x], 100
-    mov [endereco_bullet2_y], 46
-    mov [endereco_bullet3_x], 100
-    mov [endereco_bullet3_y], 46
+    cmp [game_stage], 0
+    je reset
+    call clear_screen
+    push ax
+    push cx
+    mov ax, 8
+    sub ax, [ships_remaining]
     
-    ;fire dw 0
+    cmp [game_stage], 1
+    je sub_score_lvl1
     
-    ;bullet1 dw 0
-    ;bullet2 dw 0
-    ;bullet3 dw 0
-    ret
+    mov cx, 2000
+    mul cx
+    call sub_score_value
+    pop cx
+    pop ax
+    jmp reset
+    
+    sub_score_lvl1:
+        mov cx, 2000
+        mul cx
+        call sub_score_value
+        pop cx
+        pop ax
+    
+    reset:
+        mov [ships_remaining], 8
+        mov [endereco_inimiga1_x], 100
+        mov [endereco_inimiga1_y], 160
+        mov [nave_inimiga1_ativa], 1
+
+        mov [endereco_inimiga2_x], 100
+        mov [endereco_inimiga2_y], 160
+        mov [nave_inimiga2_ativa], 1
+
+        mov [endereco_inimiga3_x], 100
+        mov [endereco_inimiga3_y], 160
+        mov [nave_inimiga3_ativa], 1
+
+        mov [endereco_bullet1_x], 100
+        mov [endereco_bullet1_y], 46
+        mov [endereco_bullet2_x], 100
+        mov [endereco_bullet2_y], 46
+        mov [endereco_bullet3_x], 100
+        mov [endereco_bullet3_y], 46
+        
+        ;fire dw 0
+        
+        ;bullet1 dw 0
+        ;bullet2 dw 0
+        ;bullet3 dw 0
+        ret
 endp
 
 game_flow proc
@@ -940,8 +967,15 @@ sub_score_value proc
     cmp [score_value], 0
     jz end_sub_score_value
     sub [score_value], ax
+    js value_is_negative 
     
-    end_sub_score_value: ret
+    end_sub_score_value: 
+        ret
+    value_is_negative:
+        ;mov [game_stage], 3
+        ;call game_flow
+        mov [score_value], 0
+        ret
 endp
 
 add_score_value proc
@@ -1256,7 +1290,7 @@ check_collision_ally proc
       mov ax, dx
       mov di, 0
       call delete_model
-
+      dec [ships_remaining]
       mov si, 0
       ret
 
