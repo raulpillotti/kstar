@@ -797,11 +797,12 @@ reset_game_state proc
     cmp [game_stage], 0
     je reset
     call clear_screen
+    
     push ax
     push cx
+    
     mov ax, 8
     sub ax, [ships_remaining]
-    
     cmp [game_stage], 1
     je sub_score_lvl1
     
@@ -813,7 +814,7 @@ reset_game_state proc
     jmp reset
     
     sub_score_lvl1:
-        mov cx, 2000
+        mov cx, 1000
         mul cx
         call sub_score_value
         pop cx
