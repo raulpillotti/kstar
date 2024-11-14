@@ -2290,9 +2290,12 @@ render_game_over proc
     
     mov cx, 003Dh     
     mov dx, 0900h  
-    call sleep
-    ;call clear_screen
-    ;call render_starting_screen
+    
+    xor ah, ah
+    int 16h
+    call clear_screen
+    mov [game_stage], 0
+    call render_starting_screen
 
     ret
 endp
@@ -2305,9 +2308,6 @@ start:
     mov dx, 0A000H    
     mov es, dx
     
-    cmp [game_stage], 4
-    je quit
-
     xor ax, ax
     xor di, di
     mov al, 13H       
