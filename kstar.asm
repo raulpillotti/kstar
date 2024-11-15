@@ -321,7 +321,13 @@ terrain_4 db  11, 11, 11, 11, 11, 11, 11, 11, 11, 11, \
     game_over_l8 db  '| | | \ \ / / _ \  __|',0
     game_over_l9 db  '| |_| |\ V /  __/ |   ',0
     game_over_l10 db ' \___/  \_/ \___|_|   ',0
-    LENGTH_OVER equ 22              
+    LENGTH_OVER equ 22
+    
+winner_l1 db '     ___     __  ___ __  __  __   /', 0
+winner_l2 db '\  /|__ |\ |/  `|__ |  \/  \|__) / ', 0
+winner_l3 db ' \/ |___| \|\__,|___|__/\__/|  \.  ', 0
+
+LENGTH_WINNER equ 35
     
     score_label db 'SCORE:', 0
     score_value dw 2000
@@ -849,6 +855,50 @@ reset_game_state proc
         ret
 endp
 
+render_winner_screen proc
+    mov bl, 2  
+    xor dx, dx
+    mov cx, LENGTH_WINNER
+    
+    ; Define a posi??o inicial para renderizar cada linha (coluna = 10, linha = 2)
+    mov dh, 2
+    mov dl, 2
+
+    mov si, offset winner_l1
+    call render_string
+    inc dh
+    mov si, offset winner_l2
+    call render_string
+    inc dh 
+    mov si, offset winner_l3
+    call render_string
+    
+    add dh, 5
+    mov dl, 17
+    
+    mov cx, 5
+    mov bl, 15
+    mov bx, offset score_value_string
+    mov ax, [score_value] 
+    call copy_int16_to_string_buffer
+    mov cx, 5
+    mov bl, 15             
+    mov si, offset score_value_string
+    call render_string
+
+    mov cx, 003Dh     
+    mov dx, 0900h  
+    
+    xor ah, ah
+    int 16h
+    call clear_screen
+    mov [game_stage], 0
+    call render_starting_screen
+    
+    ret
+endp
+
+
 game_flow proc
     call reset_game_state  
 
@@ -862,9 +912,13 @@ game_flow proc
 
     cmp [game_stage], 3
     je stage_3
-
+    
     cmp [game_stage], 4
+    je winner
+
+    cmp [game_stage], 5
     je game_over
+    
 
     stage_1:
         call render_setor_1
@@ -880,6 +934,10 @@ game_flow proc
         call render_setor_3
         mov [total_naves_inimigas], 20
         call render_game_screen
+        
+    winner:
+        call render_winner_screen
+        call start
 
     game_over:
         call render_game_over
@@ -2124,6 +2182,8 @@ set_enemy_model_speed proc
     ret
 endp
 
+
+
 render_setor_1 proc
     mov bl, 05h  ; Cor magenta para o texto
     xor dx, dx
@@ -2245,6 +2305,8 @@ clear_screen proc
     ret
 endp
 
+
+
 render_game_over proc
     call clear_screen
 
@@ -2317,6 +2379,7 @@ start:
     mov ax, 1
     call render_starting_screen
     
+    ;mov [game_stage], 3
     call game_flow
     quit: end start
         
