@@ -481,7 +481,7 @@ LENGTH_WINNER equ 35
     bullet3 dw 0
     
     game_stage dw 0
-    ;ships_remaining dw 8
+    ships_remaining dw 8
     
     nave_aliada1_ativa dw 0
     nave_aliada2_ativa dw 0
@@ -915,14 +915,13 @@ reset_game_state proc
     push ax
     push cx
     
-    mov ax, 8
-    ;sub ax, [ships_remaining]
+    mov ax, [ships_remaining]
     cmp [game_stage], 1
     je sub_score_lvl1
     
     mov cx, 2000
     mul cx
-    call sub_score_value
+    call add_score_value
     pop cx
     pop ax
     jmp reset
@@ -930,7 +929,7 @@ reset_game_state proc
     sub_score_lvl1:
         mov cx, 1000
         mul cx
-        call sub_score_value
+        call add_score_value
         pop cx
         pop ax
     
@@ -1559,6 +1558,17 @@ check_collision_ally proc
   ret
 endp
 
+dec_ships_remaining proc
+
+  mov ax, [ships_remaining]
+
+  dec ax
+
+  mov [ships_remaining], ax
+
+  ret
+endp
+
 sacrificar_nave_aliada proc
 
     xor di, di
@@ -1570,6 +1580,7 @@ sacrificar_nave_aliada proc
     mov [nave_aliada1_ativa], 0
     mov ax, 20
     call delete_model
+    call dec_ships_remaining
     ret
 
     sacrificar_nave2:
@@ -1580,6 +1591,7 @@ sacrificar_nave_aliada proc
       mov [nave_aliada2_ativa], 0
       mov ax, 40
       call delete_model
+      call dec_ships_remaining
       ret
 
     sacrificar_nave3:
@@ -1590,6 +1602,7 @@ sacrificar_nave_aliada proc
       mov [nave_aliada3_ativa], 0
       mov ax, 60
       call delete_model
+      call dec_ships_remaining
       ret
 
     sacrificar_nave4:
@@ -1600,6 +1613,7 @@ sacrificar_nave_aliada proc
       mov [nave_aliada4_ativa], 0
       mov ax, 80
       call delete_model
+      call dec_ships_remaining
       ret
 
     sacrificar_nave5:
@@ -1610,6 +1624,7 @@ sacrificar_nave_aliada proc
       mov [nave_aliada5_ativa], 0
       mov ax, 100
       call delete_model
+      call dec_ships_remaining
       ret
 
     sacrificar_nave6:
@@ -1620,6 +1635,7 @@ sacrificar_nave_aliada proc
       mov [nave_aliada6_ativa], 0
       mov ax, 120
       call delete_model
+      call dec_ships_remaining
       ret
 
     sacrificar_nave7:
@@ -1630,6 +1646,7 @@ sacrificar_nave_aliada proc
       mov [nave_aliada7_ativa], 0
       mov ax, 140
       call delete_model
+      call dec_ships_remaining
       ret
 
     sacrificar_nave8:
@@ -1640,6 +1657,7 @@ sacrificar_nave_aliada proc
       mov [nave_aliada8_ativa], 0
       mov ax, 160
       call delete_model
+      call dec_ships_remaining
       ret
 
     fim_sacrificar:
@@ -1925,40 +1943,32 @@ render_enemy_ship3 proc
 endp
 
 generate_random_x proc
-    push bx
-    push dx
-    
-    mov ax, [seed]    
-    mov bx, 1117
-    mul bx           
-    add ax, 12345    
-    mov [seed], ax
-    xor dx, dx        
-    mov bx, 201       
-    div bx           
-    mov ax, dx
+    ; Gera um número pseudoaleatório no intervalo de 20 a 160.
 
-    cmp ax, 140
-    jg set_ax_140
-    
-    cmp ax, 20
-    jl set_ax_20
-    
-    jmp end_generate_ax
-    
-    set_ax_20:
-        mov ax, 20
-        jmp end_generate_ax
-    
-    set_ax_140:
-        mov ax, 140
-        jmp end_generate_ax
-    
-    end_generate_ax:
-        pop dx
-        pop bx
-        ret
+    ; 1. Obter o tempo do sistema
+    mov ah, 2Ch         ; Função para obter o tempo do sistema (INT 21h)
+    int 21h             ; Retorna:
+                        ; CH = hora
+                        ; CL = minuto
+                        ; DH = segundo
+                        ; DL = centésimo de segundo
 
+    ; 2. Misturar o valor de tempo
+    mov ax, dx          ; Copia DH:DL para AX
+    xor ax, cx          ; Combina com CH:CL (hora:minuto) para mais entropia
+    add ax, bx          ; Adiciona BX (último número gerado ou valor fixo inicial)
+
+    ; 3. Ajustar para o intervalo desejado
+    xor dx, dx          ; Limpa DX antes da divisão
+    mov bx, 141         ; 160 - 20 + 1 = 141 (tamanho do intervalo)
+    div bx              ; AX / BX, quociente em AX, resto em DX
+
+    ; DX contém o resto (0 a 140), ajustar para 20 a 160
+    add dx, 20          ; Ajusta para o intervalo desejado
+
+    ; 4. Retorna o número gerado
+    mov ax, dx          ; Coloca o número final em AX
+    ret
 endp
 
 activate_enemy_ship proc
@@ -2538,6 +2548,7 @@ render_game_screen proc
     mov [nave_inimiga3_ativa], 0
     mov [seed_render_naves], 1234
     mov [numero_nave_ativa], 0
+    mov [ships_remaining], 8
 
     game_loop:
         call start_timer
@@ -2643,6 +2654,9 @@ endp
 
 
 render_setor_1 proc
+
+    call clear_screen
+
     mov bl, 05h  ; Cor magenta para o texto
     xor dx, dx
     mov cx, LENGTH_SETOR1
@@ -2670,12 +2684,15 @@ render_setor_1 proc
     mov dx, 0900h  
     call sleep
     call clear_screen
-    call render_game_screen
+    ;call render_game_screen
     
     ret
 endp
 
 render_setor_2 proc
+
+    call clear_screen
+
     mov bl, 04h  ; Cor vermhlo para o texto
     xor dx, dx
     mov cx, LENGTH_SETOR2
@@ -2709,6 +2726,9 @@ endp
 
 
 render_setor_3 proc
+
+    call clear_screen
+
     mov bl, 01h  ; Cor azul para o texto
     xor dx, dx
     mov cx, LENGTH_SETOR3
