@@ -492,6 +492,11 @@ terrain_l2_3 db  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
 
     numero_nave_ativa dw 0
 
+    numero_nave_inimiga_validando dw 0
+    nave_inimiga1_colidiu dw 0
+    nave_inimiga2_colidiu dw 0
+    nave_inimiga3_colidiu dw 0
+
     cr equ 13
     lf equ 10    
     
@@ -1480,8 +1485,13 @@ endp
 
 render_enemy_ships proc
 
+    mov [numero_nave_inimiga_validando], 1
     call render_enemy_ship1
+
+    mov [numero_nave_inimiga_validando], 2
     call render_enemy_ship2
+
+    mov [numero_nave_inimiga_validando], 3
     call render_enemy_ship3
 
     ret
@@ -1650,14 +1660,36 @@ check_collision_ally proc
       xor di, di
       call delete_model
       xor si, si
+      call set_collised_enemy
       jmp fim
 
     collision_not_found:
       mov si, 1
 
     fim:
-      pop di
-      pop ax
+      pop cx
+      pop bx
+
+  ret
+endp
+
+set_collised_enemy proc
+
+  cmp [numero_nave_inimiga_validando], 1
+  jne valida2
+
+  mov [nave_inimiga1_colidiu], 1
+  ret
+
+  valida2:
+    cmp [numero_nave_inimiga_validando], 2
+    jne valida3
+
+    mov [nave_inimiga2_colidiu], 1
+    ret
+
+  valida3:
+    mov [nave_inimiga3_colidiu], 1
 
   ret
 endp
@@ -1834,10 +1866,14 @@ render_enemy_ship1 proc
 
       deleteEnemy1:
         
+        cmp [nave_inimiga1_colidiu], 1
+        je skip_decrementa1
+        
         call decrementa_score
         
-        mov [nave_inimiga1_ativa], 0
-        call delete_model
+        skip_decrementa1:
+          mov [nave_inimiga1_ativa], 0
+          call delete_model
 
     endEnemy1:
 
@@ -1881,10 +1917,14 @@ render_enemy_ship2 proc
 
       deleteEnemy2:
 
+        cmp [nave_inimiga2_colidiu], 1
+        je skip_decrementa2
+        
         call decrementa_score
         
-        mov [nave_inimiga2_ativa], 0
-        call delete_model
+        skip_decrementa2:
+          mov [nave_inimiga2_ativa], 0
+          call delete_model
 
     endEnemy2:
 
@@ -1927,10 +1967,14 @@ render_enemy_ship3 proc
 
       deleteEnemy3:
 
+        cmp [nave_inimiga3_colidiu], 1
+        je skip_decrementa3
+
         call decrementa_score
-    
-        mov [nave_inimiga3_ativa], 0
-        call delete_model
+
+        skip_decrementa3:
+          mov [nave_inimiga3_ativa], 0
+          call delete_model
 
     endEnemy3:
 
@@ -1988,6 +2032,7 @@ activate_enemy_ship proc
       jmp no_activation_inimiga
 
       activate_enemy1:
+          mov [nave_inimiga1_colidiu], 0
           mov [nave_inimiga1_ativa], 1
           call generate_random_x          ; Gera a posi??o aleat?ria x
           mov [endereco_inimiga1_x], ax    ; Usa o valor gerado
@@ -1995,6 +2040,7 @@ activate_enemy_ship proc
           ret
 
       activate_enemy2:
+          mov [nave_inimiga2_colidiu], 0
           mov [nave_inimiga2_ativa], 1
           call generate_random_x          ; Gera a posi??o aleat?ria x
           mov [endereco_inimiga2_x], ax    ; Usa o valor gerado
@@ -2002,6 +2048,7 @@ activate_enemy_ship proc
           ret
 
       activate_enemy3:
+          mov [nave_inimiga3_colidiu], 0
           mov [nave_inimiga3_ativa], 1
           call generate_random_x          ; Gera a posi??o aleat?ria x
           mov [endereco_inimiga3_x], ax    ; Usa o valor gerado
