@@ -437,7 +437,7 @@ terrain_l2_3 db  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
     LENGTH_WINNER equ 35
     
     score_label db 'SCORE:', 0
-    score_value dw 2000
+    score_value dw 0
     score_value_string db ?,?,?,?,?
     
     tempo_label db 'TEMPO:', 0
@@ -480,7 +480,6 @@ terrain_l2_3 db  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
     
     game_stage dw 0
     ships_remaining dw 8
-    ships_escaped dw 0
     
     nave_aliada1_ativa dw 0
     nave_aliada2_ativa dw 0
@@ -914,40 +913,17 @@ reset_game_state proc
     cmp [game_stage], 1
     je atualiza_score_setor1
 
-    cmp [game_stage], 2
-    je atualiza_score_setor2
-
-    mov ax, [ships_escaped]
-    mov cx, 30
+    mov ax, [ships_remaining]
+    mov cx, 2000
     mul cx
-    call sub_score_value
+    call add_score_value
 
     jmp reset
     
     atualiza_score_setor1:
-        mov ax, [ships_remaining]
         mov cx, 1000
         mul cx
         call add_score_value
-
-        mov ax, [ships_escaped]
-        mov cx, 10
-        mul cx
-        call sub_score_value
-
-        jmp reset
-
-    atualiza_score_setor2:
-
-      mov ax, [ships_remaining]
-      mov cx, 2000
-      mul cx
-      call add_score_value
-
-      mov ax, [ships_escaped]
-      mov cx, 20
-      mul cx
-      call sub_score_value
 
     reset:
 
@@ -1145,16 +1121,17 @@ render_timer_tick proc
 endp
 
 sub_score_value proc
+
     cmp [score_value], 0
     jz end_sub_score_value
+
     sub [score_value], ax
     js value_is_negative 
     
     end_sub_score_value: 
         ret
+
     value_is_negative:
-        ;mov [game_stage], 3
-        ;call game_flow
         mov [score_value], 0
         ret
 endp
@@ -1738,44 +1715,44 @@ endp
 
 validar_colisao_inimiga_nave_principal proc
 
-    ; Parâmetros:
-    ; - ax: posição X da nave inimiga
-    ; - di: posição Y da nave inimiga
+    ; Par?metros:
+    ; - ax: posi??o X da nave inimiga
+    ; - di: posi??o Y da nave inimiga
     push ax
     push di
 
-    ; Verifica colisão no eixo X
-    mov bx, ax        ; Copia posição X da nave inimiga
-    sub bx, dx        ; Calcula a diferença no eixo X
-    cmp bx, 0         ; Verifica se a inimiga está à esquerda da nave principal
-    jl verificar_oposto_x ; Se estiver à esquerda, verifica o sentido oposto
+    ; Verifica colis?o no eixo X
+    mov bx, ax        ; Copia posi??o X da nave inimiga
+    sub bx, dx        ; Calcula a diferen?a no eixo X
+    cmp bx, 0         ; Verifica se a inimiga est? ? esquerda da nave principal
+    jl verificar_oposto_x ; Se estiver ? esquerda, verifica o sentido oposto
 
-    cmp bx, MODEL_WIDTH ; Verifica se está além da largura da nave
-    jge short fim_validacao    ; Fora da largura da nave, sem colisão
-    jmp short verificar_y_axis ; Está dentro do eixo X, verificar eixo Y
+    cmp bx, MODEL_WIDTH ; Verifica se est? al?m da largura da nave
+    jge short fim_validacao    ; Fora da largura da nave, sem colis?o
+    jmp short verificar_y_axis ; Est? dentro do eixo X, verificar eixo Y
 
   verificar_oposto_x:
       mov bx, dx
-      sub bx, ax         ; Calcula a diferença no sentido oposto
+      sub bx, ax         ; Calcula a diferen?a no sentido oposto
       cmp bx, 0
       jl short fim_validacao    ; Fora da largura da nave
       cmp bx, MODEL_WIDTH
       jge short fim_validacao    ; Fora da largura da nave
 
   verificar_y_axis:
-      ; Verifica colisão no eixo Y
-      mov bx, di        ; Copia posição Y da nave inimiga
-      sub bx, [endereco_nave_principal_y]        ; Calcula a diferença no eixo Y
-      cmp bx, 0         ; Verifica se a inimiga está acima da nave principal
+      ; Verifica colis?o no eixo Y
+      mov bx, di        ; Copia posi??o Y da nave inimiga
+      sub bx, [endereco_nave_principal_y]        ; Calcula a diferen?a no eixo Y
+      cmp bx, 0         ; Verifica se a inimiga est? acima da nave principal
       jl short verificar_oposto_y ; Se estiver acima, verifica o sentido oposto
 
-      cmp bx, MODEL_HEIGHT ; Verifica se está além da altura da nave
-      jge short fim_validacao    ; Fora da altura da nave, sem colisão
-      jmp short colisao_detectada ; Está dentro do eixo Y, colisão detectada
+      cmp bx, MODEL_HEIGHT ; Verifica se est? al?m da altura da nave
+      jge short fim_validacao    ; Fora da altura da nave, sem colis?o
+      jmp short colisao_detectada ; Est? dentro do eixo Y, colis?o detectada
 
   verificar_oposto_y:
       mov bx, [endereco_nave_principal_y]
-      sub bx, di         ; Calcula a diferença no sentido oposto
+      sub bx, di         ; Calcula a diferen?a no sentido oposto
       cmp bx, 0
       jl short fim_validacao    ; Fora da altura da nave
       
@@ -1796,9 +1773,26 @@ validar_colisao_inimiga_nave_principal proc
       jmp fim_validacao
 
   fim_validacao:
-      ; Fim da validação, restaura os registradores
+      ; Fim da valida??o, restaura os registradores
       pop di
       pop ax
+
+    ret
+endp
+
+decrementa_score proc
+
+    push cx
+    push ax
+
+    mov ax, [game_stage]
+    mov cx, 10
+    mul cx
+
+    call sub_score_value
+
+    pop ax
+    pop cx
 
     ret
 endp
@@ -1839,16 +1833,9 @@ render_enemy_ship1 proc
       jmp endEnemy1
 
       deleteEnemy1:
-        ; push cx
-        ; push ax
-        ; mov ax, [game_stage]
-        ; mov cx, 10
-        ; mul cx
-        ; call sub_score_value
-        ; pop ax
-        ; pop cx
-        inc [ships_escaped]
-
+        
+        call decrementa_score
+        
         mov [nave_inimiga1_ativa], 0
         call delete_model
 
@@ -1893,16 +1880,9 @@ render_enemy_ship2 proc
       jmp endEnemy2
 
       deleteEnemy2:
-        ; push cx
-        ; push ax
-        ; mov ax, [game_stage]
-        ; mov cx, 10
-        ; mul cx
-        ; call sub_score_value
-        ; pop ax
-        ; pop cx
-        inc [ships_escaped]
 
+        call decrementa_score
+        
         mov [nave_inimiga2_ativa], 0
         call delete_model
 
@@ -1946,16 +1926,9 @@ render_enemy_ship3 proc
       jmp endEnemy3
 
       deleteEnemy3:
-        ; push cx
-        ; push ax
-        ; mov ax, [game_stage]
-        ; mov cx, 10
-        ; mul cx
-        ; call sub_score_value
-        ; pop ax
-        ; pop cx
-        inc [ships_escaped]
 
+        call decrementa_score
+    
         mov [nave_inimiga3_ativa], 0
         call delete_model
 
@@ -1965,31 +1938,31 @@ render_enemy_ship3 proc
 endp
 
 generate_random_x proc
-    ; Gera um número pseudoaleatório no intervalo de 20 a 160.
+    ; Gera um n?mero pseudoaleat?rio no intervalo de 20 a 160.
 
     ; 1. Obter o tempo do sistema
-    mov ah, 2Ch         ; Função para obter o tempo do sistema (INT 21h)
+    mov ah, 2Ch         ; Fun??o para obter o tempo do sistema (INT 21h)
     int 21h             ; Retorna:
                         ; CH = hora
                         ; CL = minuto
                         ; DH = segundo
-                        ; DL = centésimo de segundo
+                        ; DL = cent?simo de segundo
 
     ; 2. Misturar o valor de tempo
     mov ax, dx          ; Copia DH:DL para AX
     xor ax, cx          ; Combina com CH:CL (hora:minuto) para mais entropia
-    add ax, bx          ; Adiciona BX (último número gerado ou valor fixo inicial)
+    add ax, bx          ; Adiciona BX (?ltimo n?mero gerado ou valor fixo inicial)
 
     ; 3. Ajustar para o intervalo desejado
-    xor dx, dx          ; Limpa DX antes da divisão
+    xor dx, dx          ; Limpa DX antes da divis?o
     mov bx, 141         ; 160 - 20 + 1 = 141 (tamanho do intervalo)
     div bx              ; AX / BX, quociente em AX, resto em DX
 
-    ; DX contém o resto (0 a 140), ajustar para 20 a 160
+    ; DX cont?m o resto (0 a 140), ajustar para 20 a 160
     add dx, 20          ; Ajusta para o intervalo desejado
 
-    ; 4. Retorna o número gerado
-    mov ax, dx          ; Coloca o número final em AX
+    ; 4. Retorna o n?mero gerado
+    mov ax, dx          ; Coloca o n?mero final em AX
     ret
 endp
 
@@ -2571,7 +2544,6 @@ render_game_screen proc
     mov [nave_inimiga3_ativa], 0
     mov [numero_nave_ativa], 0
     mov [ships_remaining], 8
-    mov [ships_escaped], 0
 
     game_loop:
         call start_timer
