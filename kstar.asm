@@ -5,8 +5,9 @@ model small
 .data
     max_line_size equ 40 
        
-    seed dw 12345    ; Semente inicial
+    seed dw 12345    
 
+    ;t?tulo
     title_l1 db '  _  __       ___   _                 ',0
     title_l2 db ' | |/ / ___  / __| | |_   __ _   _ _  ',0
     title_l3 db ' |   < |___| \__ \ |  _| / _` | |  _| ',0
@@ -14,10 +15,10 @@ model small
     title_l5 db '   ___          _                 _   ',0
     title_l6 db '  | _ \  __ _  | |_   _ _   ___  | |  ',0
     title_l7 db '  |  _/ / _` | |  _| |  _| / _ \ | |  ',0
-    title_l8 db '  |_|   \__,_|  \__| |_|   \___/ |_|  ',0
-                                   
+    title_l8 db '  |_|   \__,_|  \__| |_|   \___/ |_|  ',0                                   
     title_line_size equ 38
     
+    ;bot?es
     button_line_size equ 11
     btn_jogar_l1 db 218,196,196,196,196,196,196,196,196,196,191,0
     btn_jogar_l2 db 179,'  JOGAR  ',179,0
@@ -27,20 +28,16 @@ model small
     btn_sair_l2 db 179,'  SAIR   ',179,0
     btn_sair_l3 db 192,196,196,196,196,196,196,196,196,196,217,0
     
-    teste db 'raul'
-    
-    TERRAIN_HEIGHT equ 20
-    
-    ;ship db 0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,0,0,0,0,0,0,0,0,0,1,1,0,1,1,0,1,1,0,0,0,0,0,0,1,1,0,1,1,1,1,0,1,1,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,1,1,0,1,1,0,0,0,0,0,0,0,0,0,1,1,0,0,0,1,1,0,0,0,0,0,0,0,1,1,0,0,0,0,0,1,1,0,0,0
+    ;constantes
+    TERRAIN_HEIGHT equ 20    
     MODEL_HEIGHT equ 9
     MODEL_WIDTH equ 15
-    
     SCREEN_WIDTH equ 320
     SCREEN_HALF_WIDTH equ 160
     SCREEN_HEIGHT equ 200
     
+    ;model
     ship_size_bytes equ 135
-    
     deleted_model db    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, \
                0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, \
                0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, \
@@ -183,6 +180,7 @@ model small
     1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,
     
     
+    ;terrenos
     terrain_l1_1 db  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
               0, 0, 0, 6, 0, 0, 0, 0, 0, 0, \
               0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
@@ -500,7 +498,7 @@ terrain_l2_3 db   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
 
 
 
-    ; Definir o texto em ASCII para o setor 1
+    ; setores t?tulo
     setor1_l1 db '   _____      __                ___ ', 0
     setor1_l2 db '  / ___/___  / /_____  _____   <  / ', 0
     setor1_l3 db '  \__ \/ _ \/ __/ __ \/ ___/   / /  ', 0
@@ -542,17 +540,21 @@ terrain_l2_3 db   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
 
     LENGTH_WINNER equ 35
     
+    ;score
     score_label db 'SCORE:', 0
     score_value dw 0
     score_value_string db ?,?,?,?,?
     
+    ;timer
     tempo_label db 'TEMPO:', 0
     tempo_value dw 60 ; Contador de segundos para 60s
     tempo_value_string db ?,?
     
+
     count_interno dw 0     ; contador interno para aproximadamente 1 segundo
     count_interno_naves dw 0     ; contador interno para aproximadamente 1 segundo
 
+    ;naves/tiro
     endereco_nave_principal_x dw 100
     endereco_nave_principal_y dw 32
     nave_principal_ativa dw 1
