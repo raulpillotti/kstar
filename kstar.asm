@@ -903,7 +903,7 @@ delete_model proc
 endp
 
 ; Tela inicial
-render_starting_screen proc
+render_main_menu proc
     call render_title
     mov bx, 1
     push bx
@@ -1107,7 +1107,7 @@ render_winner_screen proc
     int 16h
     call clear_screen
     mov [game_stage], 0
-    call render_starting_screen
+    call render_main_menu
     
     ret
 endp
@@ -2198,31 +2198,25 @@ render_enemy_ship3 proc
 endp
 
 generate_random_x proc
-    ; Gera um n?mero pseudoaleat?rio no intervalo de 20 a 160.
 
     ; 1. Obter o tempo do sistema
-    mov ah, 2Ch         ; Fun??o para obter o tempo do sistema (INT 21h)
-    int 21h             ; Retorna:
-                        ; CH = hora
-                        ; CL = minuto
-                        ; DH = segundo
-                        ; DL = cent?simo de segundo
+    mov ah, 2Ch         ; Configura a função 2Ch da interrupção 21h
+    int 21h             ; Interrupção para obter o horário atual
 
     ; 2. Misturar o valor de tempo
-    mov ax, dx          ; Copia DH:DL para AX
-    xor ax, cx          ; Combina com CH:CL (hora:minuto) para mais entropia
-    add ax, bx          ; Adiciona BX (?ltimo n?mero gerado ou valor fixo inicial)
+    mov ax, dx          ; Move o valor de DX (tempo) para AX.
+    xor ax, cx          ; Eembaralhar os bits
+    add ax, bx          ; Aumentar a pseudoaleatoriedade
 
     ; 3. Ajustar para o intervalo desejado
     xor dx, dx          ; Limpa DX antes da divis?o
-    mov bx, 141         ; 160 - 20 + 1 = 141 (tamanho do intervalo)
+    mov bx, 141         ; Define o divisor como 141.
     div bx              ; AX / BX, quociente em AX, resto em DX
 
-    ; DX cont?m o resto (0 a 140), ajustar para 20 a 160
-    add dx, 20          ; Ajusta para o intervalo desejado
+    add dx, 20
 
-    ; 4. Retorna o n?mero gerado
-    mov ax, dx          ; Coloca o n?mero final em AX
+    ; 4. Retorna o número gerado
+    mov ax, dx
     ret
 endp
 
@@ -2886,8 +2880,8 @@ render_game_screen proc
         
         jmp game_loop
     
-    floor_one_completed:
-      call game_flow
+    ; floor_one_completed:
+    ;   call game_flow
 
     ret
 endp
@@ -3084,7 +3078,7 @@ render_game_over proc
     int 16h
     call clear_screen
     mov [game_stage], 0
-    call render_starting_screen
+    call render_main_menu
 
     ret
 endp
@@ -3103,7 +3097,7 @@ start:
     int 10H           
     
     mov ax, 1
-    call render_starting_screen
+    call render_main_menu
     
     ;mov [game_stage], 3
     call game_flow
