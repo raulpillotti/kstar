@@ -1010,7 +1010,14 @@ render_main_menu proc
         jmp ship_left_loop
         
         handle_enter_pressed:
+        cmp bx, 0
+        je quit_game
         pop bx
+        ret
+        
+    quit_game:
+        mov ax,4C00h
+        int 21h
         ret
     ret
 endp
@@ -2200,8 +2207,8 @@ endp
 generate_random_x proc
 
     ; 1. Obter o tempo do sistema
-    mov ah, 2Ch         ; Configura a função 2Ch da interrupção 21h
-    int 21h             ; Interrupção para obter o horário atual
+    mov ah, 2Ch         ; Configura a fun??o 2Ch da interrup??o 21h
+    int 21h             ; Interrup??o para obter o hor?rio atual
 
     ; 2. Misturar o valor de tempo
     mov ax, dx          ; Move o valor de DX (tempo) para AX.
@@ -2215,7 +2222,7 @@ generate_random_x proc
 
     add dx, 20
 
-    ; 4. Retorna o número gerado
+    ; 4. Retorna o n?mero gerado
     mov ax, dx
     ret
 endp
