@@ -35,6 +35,7 @@ model small
     SCREEN_WIDTH equ 320
     SCREEN_HALF_WIDTH equ 160
     SCREEN_HEIGHT equ 200
+    ENEMY_SHIP_STARTING_X equ 160
     
     ;model
     ship_size_bytes equ 135
@@ -2253,7 +2254,7 @@ activate_enemy_ship proc
           mov [nave_inimiga1_ativa], 1
           call generate_random_x          ; Gera a posi??o aleat?ria x
           mov [endereco_inimiga1_x], ax    ; Usa o valor gerado
-          mov [endereco_inimiga1_y], 300 ; Alterar para 160 conforme est? no trabalho depois
+          mov [endereco_inimiga1_y], ENEMY_SHIP_STARTING_X ; Alterar para 160 conforme est? no trabalho depois
           ret
 
       activate_enemy2:
@@ -2261,7 +2262,7 @@ activate_enemy_ship proc
           mov [nave_inimiga2_ativa], 1
           call generate_random_x          ; Gera a posi??o aleat?ria x
           mov [endereco_inimiga2_x], ax    ; Usa o valor gerado
-          mov [endereco_inimiga2_y], 300 ; Alterar para 160 conforme est? no trabalho depois
+          mov [endereco_inimiga2_y], ENEMY_SHIP_STARTING_X  ; Alterar para 160 conforme est? no trabalho depois
           ret
 
       activate_enemy3:
@@ -2269,7 +2270,7 @@ activate_enemy_ship proc
           mov [nave_inimiga3_ativa], 1
           call generate_random_x          ; Gera a posi??o aleat?ria x
           mov [endereco_inimiga3_x], ax    ; Usa o valor gerado
-          mov [endereco_inimiga3_y], 300 ; Alterar para 160 conforme est? no trabalho depois
+          mov [endereco_inimiga3_y], ENEMY_SHIP_STARTING_X  ; Alterar para 160 conforme est? no trabalho depois
           ret
 
     no_activation_inimiga:
