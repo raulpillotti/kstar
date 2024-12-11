@@ -35,7 +35,7 @@ model small
     SCREEN_WIDTH equ 320
     SCREEN_HALF_WIDTH equ 160
     SCREEN_HEIGHT equ 200
-    ENEMY_SHIP_STARTING_X equ 160
+    ENEMY_SHIP_STARTING_X equ 300
     
     ;model
     ship_size_bytes equ 135
@@ -1031,10 +1031,11 @@ reset_game_state proc
     je reset
     call clear_screen
     
+    mov ax, [ships_remaining]
+    
     cmp [game_stage], 1
     je atualiza_score_setor1
-
-    mov ax, [ships_remaining]
+    
     mov cx, 2000
     mul cx
     call add_score_value
